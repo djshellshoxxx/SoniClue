@@ -237,3 +237,17 @@ def test_paths_with_spaces_and_hash(tmp_path):
     st.close()
     assert ws.list_cases()[0]["title"] == "spaces"
     ws.open_case(cid).close()
+
+
+def test_analysis_preserves_original_single_channel_capture(tmp_path):
+    """Single-channel float32 input can alias an analysis working buffer."""
+    from sonicclue.analysis.pipeline import analyze
+
+    st = _ws(tmp_path).create_case("immutability")
+    writer, data, header = _write_capture(st, nch=1)
+    manifest = CaptureManifest.model_validate({**header, "frames": len(data), "chunks": writer.close()})
+    data[17, 0] = np.nan  # sanitizing nonfinite samples must not rewrite raw input
+    original = data.copy()
+    analyze(manifest, data, {}, {})
+    np.testing.assert_array_equal(data, original, strict=True)
+    st.close()
