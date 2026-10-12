@@ -89,7 +89,11 @@ def analyze(manifest: CaptureManifest, data: np.ndarray, sensors: dict[str, Sens
             raise CancelledError("analysis cancelled")
         # float32 end to end (the converter's native precision); kernels promote
         # bounded blocks to float64 internally, so full-length float64 copies are avoided.
-        x = np.ascontiguousarray(data[:, col], dtype=np.float32)
+        # Always own the working buffer. A single-channel float32 input may
+        # already be contiguous; ascontiguousarray would then alias caller data.
+        # Later nan_to_num(copy=False) and calibration scaling are in-place.
+        # Analysis must never mutate the original capture or another view of it.
+        x = np.array(data[:, col], dtype=np.float32, order="C", copy=True)
         scr = levels.screen_channel(x, fs, ch.index, gaps)
         flags = list(scr.flags)
         sensor = sensors.get(ch.sensor_id) if ch.sensor_id else None
