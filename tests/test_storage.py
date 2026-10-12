@@ -86,7 +86,12 @@ def test_verify_detects_tampering_and_missing(tmp_path):
     assert any("checksum" in x for x in probs)
     with pytest.raises(IntegrityError):
         read_chunks(st.capture_dir(m.id), m.chunks, verify=True)
-    os.remove(st.capture_dir(m.id) / m.chunks[2].file)
+    # Capture chunks are intentionally read-only. On Windows, deletion of a
+    # read-only file fails even when no process has it open. Explicitly make
+    # this fixture writable before simulating an externally deleted chunk.
+    missing_chunk = st.capture_dir(m.id) / m.chunks[2].file
+    os.chmod(missing_chunk, 0o644)
+    missing_chunk.unlink()
     assert any("missing" in x for x in st.verify())
     st.close()
 
