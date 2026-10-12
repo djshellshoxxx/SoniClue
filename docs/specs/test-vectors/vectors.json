@@ -1,0 +1,134 @@
+[
+  {
+    "id": "TV-001",
+    "inv": "INV-004",
+    "input": "sine(f=1001.3 Hz, A=0.3, 10 s, fs=48 kHz), hann, 1 Hz target",
+    "quantity": "tone power (FS^2)",
+    "reference": "closed form A^2/2",
+    "expected": 0.045,
+    "computed": 0.044997101400865935,
+    "rtol": 0.01,
+    "physical_uncertainty": "n/a (synthetic)"
+  },
+  {
+    "id": "TV-002",
+    "inv": "INV-003",
+    "input": "white_noise(rms=0.1, 20 s, seed=42)",
+    "quantity": "sum(PSD)*df / var(x)",
+    "reference": "Parseval identity = 1",
+    "expected": 1.0,
+    "computed": 1.0003105997973227,
+    "rtol": 0.02,
+    "physical_uncertainty": "estimator variance ~ 1/sqrt(n_avg*bins)"
+  },
+  {
+    "id": "TV-003",
+    "inv": "INV-004",
+    "input": "hann window, N=4096 (periodic)",
+    "quantity": "ENBW (bins)",
+    "reference": "N*sum(w^2)/sum(w)^2 (published values)",
+    "expected": 1.5,
+    "computed": 1.5,
+    "rtol": 0.003,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-004",
+    "inv": "INV-004",
+    "input": "hamming window, N=4096 (periodic)",
+    "quantity": "ENBW (bins)",
+    "reference": "N*sum(w^2)/sum(w)^2 (published values)",
+    "expected": 1.36283,
+    "computed": 1.3628257887517146,
+    "rtol": 0.003,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-005",
+    "inv": "INV-004",
+    "input": "boxcar window, N=4096 (periodic)",
+    "quantity": "ENBW (bins)",
+    "reference": "N*sum(w^2)/sum(w)^2 (published values)",
+    "expected": 1.0,
+    "computed": 1.0,
+    "rtol": 0.003,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-006",
+    "inv": "INV-004",
+    "input": "blackmanharris window, N=4096 (periodic)",
+    "quantity": "ENBW (bins)",
+    "reference": "N*sum(w^2)/sum(w)^2 (published values)",
+    "expected": 2.00435,
+    "computed": 2.0043529382170475,
+    "rtol": 0.003,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-007",
+    "inv": "INV-004",
+    "input": "flattop window, N=4096 (periodic)",
+    "quantity": "ENBW (bins)",
+    "reference": "N*sum(w^2)/sum(w)^2 (published values)",
+    "expected": 3.77,
+    "computed": 3.7702464474434287,
+    "rtol": 0.003,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-008",
+    "inv": "INV-005",
+    "input": "y = x delayed 0.5 ms; H1 = Pxy/Pxx at ~200 Hz",
+    "quantity": "phase (rad)",
+    "reference": "-2*pi*f*tau",
+    "expected": -0.6258641614573417,
+    "computed": -0.6256915219820407,
+    "atol": 0.02,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-009",
+    "inv": "INV-011/ADV-009",
+    "input": "n_eff=1, alpha=0.05",
+    "quantity": "coherence threshold",
+    "reference": "1 - alpha^(1/(n-1))",
+    "expected": 1.0,
+    "computed": 1.0,
+    "rtol": 1e-12,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-010",
+    "inv": "INV-011/ADV-009",
+    "input": "n_eff=8, alpha=0.05",
+    "quantity": "coherence threshold",
+    "reference": "1 - alpha^(1/(n-1))",
+    "expected": 0.3481636551311609,
+    "computed": 0.3481636551311609,
+    "rtol": 1e-12,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-011",
+    "inv": "INV-011/ADV-009",
+    "input": "n_eff=32, alpha=0.05",
+    "quantity": "coherence threshold",
+    "reference": "1 - alpha^(1/(n-1))",
+    "expected": 0.09211405994732369,
+    "computed": 0.09211405994732369,
+    "rtol": 1e-12,
+    "physical_uncertainty": "n/a"
+  },
+  {
+    "id": "TV-012",
+    "inv": "INV-001",
+    "input": "94 dB SPL",
+    "quantity": "Pa RMS",
+    "reference": "20e-6 * 10^(94/20)",
+    "expected": 1.0023744672545445,
+    "computed": 1.0023744672545452,
+    "rtol": 1e-12,
+    "physical_uncertainty": "calibrator class"
+  }
+]
