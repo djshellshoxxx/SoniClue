@@ -1,0 +1,368 @@
+{
+  "$defs": {
+    "BandDelta": {
+      "additionalProperties": false,
+      "properties": {
+        "center_hz": {
+          "title": "Center Hz",
+          "type": "number"
+        },
+        "delta_db": {
+          "title": "Delta Db",
+          "type": "number"
+        },
+        "significant": {
+          "title": "Significant",
+          "type": "boolean"
+        },
+        "uncertainty_db": {
+          "minimum": 0,
+          "title": "Uncertainty Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "center_hz",
+        "delta_db",
+        "uncertainty_db",
+        "significant"
+      ],
+      "title": "BandDelta",
+      "type": "object"
+    },
+    "ComparabilityIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "title": "B",
+          "type": "string"
+        },
+        "effect": {
+          "enum": [
+            "invalidates",
+            "caveat"
+          ],
+          "title": "Effect",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "a",
+        "b",
+        "effect",
+        "message"
+      ],
+      "title": "ComparabilityIssue",
+      "type": "object"
+    },
+    "InterventionRecord": {
+      "additionalProperties": false,
+      "description": "What was physically changed. The four ``changes_*`` booleans drive the\nconfound check for ADV-007. None means the user did not say.",
+      "properties": {
+        "changes_measurement_setup": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Measurement Setup"
+        },
+        "changes_receiver": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Receiver"
+        },
+        "changes_source_output": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Source Output"
+        },
+        "changes_transmission_path": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Transmission Path"
+        },
+        "description": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "target": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "title": "InterventionRecord",
+      "type": "object"
+    },
+    "ToneDelta": {
+      "additionalProperties": false,
+      "properties": {
+        "delta_db": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delta Db"
+        },
+        "freq_hz": {
+          "title": "Freq Hz",
+          "type": "number"
+        },
+        "level_a_db": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Level A Db"
+        },
+        "level_b_db": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Level B Db"
+        },
+        "status": {
+          "enum": [
+            "reduced",
+            "increased",
+            "unchanged",
+            "disappeared",
+            "appeared"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "freq_hz",
+        "status"
+      ],
+      "title": "ToneDelta",
+      "type": "object"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/comparison_result-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Delta convention: delta = B - A in dB (negative means quieter in B).",
+  "properties": {
+    "algorithm_version": {
+      "title": "Algorithm Version",
+      "type": "string"
+    },
+    "band_deltas": {
+      "items": {
+        "$ref": "#/$defs/BandDelta"
+      },
+      "title": "Band Deltas",
+      "type": "array"
+    },
+    "captures_a": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Captures A",
+      "type": "array"
+    },
+    "captures_b": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Captures B",
+      "type": "array"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "changed_equipment": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Changed Equipment",
+      "type": "object"
+    },
+    "channel_label": {
+      "title": "Channel Label",
+      "type": "string"
+    },
+    "comparable": {
+      "title": "Comparable",
+      "type": "boolean"
+    },
+    "created_utc": {
+      "format": "date-time",
+      "title": "Created Utc",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "intervention": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/InterventionRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/ComparabilityIssue"
+      },
+      "title": "Issues",
+      "type": "array"
+    },
+    "kind": {
+      "default": "generic",
+      "enum": [
+        "state",
+        "intervention",
+        "generic"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "label_a": {
+      "title": "Label A",
+      "type": "string"
+    },
+    "label_b": {
+      "title": "Label B",
+      "type": "string"
+    },
+    "overall_delta_db": {
+      "title": "Overall Delta Db",
+      "type": "number"
+    },
+    "overall_significant": {
+      "title": "Overall Significant",
+      "type": "boolean"
+    },
+    "overall_uncertainty_db": {
+      "minimum": 0,
+      "title": "Overall Uncertainty Db",
+      "type": "number"
+    },
+    "procedure_run_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Procedure Run Id"
+    },
+    "repeatability": {
+      "enum": [
+        "measured",
+        "estimated"
+      ],
+      "title": "Repeatability",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "tone_deltas": {
+      "items": {
+        "$ref": "#/$defs/ToneDelta"
+      },
+      "title": "Tone Deltas",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "case_id",
+    "label_a",
+    "label_b",
+    "captures_a",
+    "captures_b",
+    "channel_label",
+    "comparable",
+    "overall_delta_db",
+    "overall_uncertainty_db",
+    "overall_significant",
+    "repeatability",
+    "algorithm_version",
+    "created_utc"
+  ],
+  "title": "ComparisonResult",
+  "type": "object"
+}
