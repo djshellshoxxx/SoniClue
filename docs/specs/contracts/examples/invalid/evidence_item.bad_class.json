@@ -1,0 +1,15 @@
+{
+  "id": "ev-se-0001",
+  "kind": "state_effect",
+  "statement_class": "proven",
+  "summary": "Tone 117.0 Hz fell by 35.0 dB with pc off",
+  "params": {
+    "subject": "pc",
+    "delta_db": -35.0
+  },
+  "sources": [
+    "cmp-0001"
+  ],
+  "freq_hz": 117.0,
+  "valid": true
+}

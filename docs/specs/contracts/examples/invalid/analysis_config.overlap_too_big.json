@@ -1,0 +1,16 @@
+{
+  "window": "hann",
+  "resolution_hz": 1.0,
+  "overlap": 0.99,
+  "min_averages": 8,
+  "min_nperseg": 256,
+  "fmin_hz": 10.0,
+  "tone_prominence_db": 10.0,
+  "max_peaks": 25,
+  "event_threshold_db": 8.0,
+  "event_frame_s": 0.01,
+  "band_type": "third_octave",
+  "coherence_alpha": 0.05,
+  "spectrogram_nperseg": 4096,
+  "store_arrays": true
+}

@@ -1,0 +1,19 @@
+{
+  "type": "data",
+  "seq": 70000,
+  "sample_counter": 27200,
+  "device_time_us": 17000000,
+  "axes": 3,
+  "samples": [
+    [
+      12,
+      -4,
+      1020
+    ],
+    [
+      13,
+      -3,
+      1019
+    ]
+  ]
+}

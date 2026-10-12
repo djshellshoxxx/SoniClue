@@ -1,0 +1,13 @@
+{
+  "id": "mic1",
+  "kind": "contact_pickup",
+  "model": "ECM8000",
+  "serial": "A123",
+  "quantity": "sound_pressure",
+  "axis": "omni",
+  "usable_band_hz": [
+    20.0,
+    20000.0
+  ],
+  "notes": ""
+}

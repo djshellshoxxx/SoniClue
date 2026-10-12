@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "id": "clk-0001",
+  "reference_capture_id": "cap-a",
+  "other_capture_id": "cap-b",
+  "basis": "common_event",
+  "offset_s": 0.0123,
+  "drift_ppm": 9000,
+  "residual_s": 2.2e-06,
+  "ambiguity_ratio": 0.08,
+  "valid_from_s": 0.0,
+  "valid_to_s": 30.0,
+  "eligible_max_freq_hz": 24000.0,
+  "method": "windowed cross-correlation",
+  "created_utc": "2026-10-12T12:00:00Z"
+}

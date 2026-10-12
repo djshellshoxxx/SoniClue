@@ -1,0 +1,9 @@
+{
+  "type": "hello",
+  "protocol_version": 1,
+  "device_model": "ADXL345-bridge",
+  "firmware_version": "0.1.0",
+  "sample_rate_hz": 1600.0,
+  "axes": 4,
+  "full_scale_g": 4.0
+}
