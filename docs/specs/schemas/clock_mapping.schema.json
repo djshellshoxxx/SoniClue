@@ -1,0 +1,95 @@
+{
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/clock_mapping-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Maps frame indices of capture ``other`` onto the timeline of ``reference``:\nt_ref = offset_s + (1 + drift_ppm*1e-6) * n_other / fs_other.",
+  "properties": {
+    "ambiguity_ratio": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Ambiguity Ratio",
+      "type": "number"
+    },
+    "basis": {
+      "enum": [
+        "shared_clock",
+        "common_event",
+        "hardware_timestamp",
+        "host_timestamp"
+      ],
+      "title": "Basis",
+      "type": "string"
+    },
+    "created_utc": {
+      "format": "date-time",
+      "title": "Created Utc",
+      "type": "string"
+    },
+    "drift_ppm": {
+      "maximum": 2000,
+      "minimum": -2000,
+      "title": "Drift Ppm",
+      "type": "number"
+    },
+    "eligible_max_freq_hz": {
+      "minimum": 0,
+      "title": "Eligible Max Freq Hz",
+      "type": "number"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "method": {
+      "title": "Method",
+      "type": "string"
+    },
+    "offset_s": {
+      "title": "Offset S",
+      "type": "number"
+    },
+    "other_capture_id": {
+      "title": "Other Capture Id",
+      "type": "string"
+    },
+    "reference_capture_id": {
+      "title": "Reference Capture Id",
+      "type": "string"
+    },
+    "residual_s": {
+      "minimum": 0,
+      "title": "Residual S",
+      "type": "number"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "valid_from_s": {
+      "default": 0.0,
+      "title": "Valid From S",
+      "type": "number"
+    },
+    "valid_to_s": {
+      "title": "Valid To S",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "reference_capture_id",
+    "other_capture_id",
+    "basis",
+    "offset_s",
+    "drift_ppm",
+    "residual_s",
+    "ambiguity_ratio",
+    "valid_to_s",
+    "eligible_max_freq_hz",
+    "method",
+    "created_utc"
+  ],
+  "title": "ClockMapping",
+  "type": "object"
+}

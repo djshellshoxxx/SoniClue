@@ -1,0 +1,76 @@
+{
+  "$defs": {
+    "ArchiveEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "maxLength": 300,
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size": {
+          "minimum": 0,
+          "title": "Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "size",
+        "sha256"
+      ],
+      "title": "ArchiveEntry",
+      "type": "object"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/archive_manifest-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "created_utc": {
+      "format": "date-time",
+      "title": "Created Utc",
+      "type": "string"
+    },
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/ArchiveEntry"
+      },
+      "maxItems": 200000,
+      "title": "Entries",
+      "type": "array"
+    },
+    "format": {
+      "const": "sonicclue-case-archive",
+      "default": "sonicclue-case-archive",
+      "title": "Format",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "software_version": {
+      "title": "Software Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "case_id",
+    "created_utc",
+    "software_version",
+    "entries"
+  ],
+  "title": "ArchiveManifest",
+  "type": "object"
+}

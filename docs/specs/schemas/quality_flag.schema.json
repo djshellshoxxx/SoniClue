@@ -1,0 +1,109 @@
+{
+  "$defs": {
+    "QualityCode": {
+      "enum": [
+        "clipping",
+        "near_clipping",
+        "dropout_gap",
+        "input_overflow",
+        "silence",
+        "low_signal",
+        "dc_offset",
+        "nonfinite",
+        "short_capture",
+        "insufficient_averages",
+        "agc_active",
+        "agc_unknown",
+        "cal_missing",
+        "cal_gain_mismatch",
+        "cal_expired",
+        "cal_out_of_band",
+        "sync_unverified",
+        "sync_ambiguous",
+        "sync_insufficient",
+        "clock_reset",
+        "mismatched_rate",
+        "nonuniform_timestamps",
+        "recovered_capture",
+        "partial_capture",
+        "device_disconnected",
+        "simulated_data",
+        "alias_risk",
+        "tier_limited"
+      ],
+      "title": "QualityCode",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "info",
+        "warning",
+        "invalid"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/quality_flag-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "channel": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Channel"
+    },
+    "code": {
+      "$ref": "#/$defs/QualityCode"
+    },
+    "end_frame": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "End Frame"
+    },
+    "message": {
+      "maxLength": 500,
+      "title": "Message",
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/$defs/Severity"
+    },
+    "start_frame": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Start Frame"
+    }
+  },
+  "required": [
+    "code",
+    "severity",
+    "message"
+  ],
+  "title": "QualityFlag",
+  "type": "object"
+}
