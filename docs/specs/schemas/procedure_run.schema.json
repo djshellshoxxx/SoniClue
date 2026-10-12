@@ -1,0 +1,179 @@
+{
+  "$defs": {
+    "InterventionRecord": {
+      "additionalProperties": false,
+      "description": "What was physically changed. The four ``changes_*`` booleans drive the\nconfound check for ADV-007. None means the user did not say.",
+      "properties": {
+        "changes_measurement_setup": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Measurement Setup"
+        },
+        "changes_receiver": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Receiver"
+        },
+        "changes_source_output": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Source Output"
+        },
+        "changes_transmission_path": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Transmission Path"
+        },
+        "description": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "target": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "title": "InterventionRecord",
+      "type": "object"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/procedure_run-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "captures": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Captures",
+      "type": "object"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "failure_reason": {
+      "default": "",
+      "title": "Failure Reason",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "interventions": {
+      "additionalProperties": {
+        "$ref": "#/$defs/InterventionRecord"
+      },
+      "title": "Interventions",
+      "type": "object"
+    },
+    "outcome": {
+      "default": "",
+      "title": "Outcome",
+      "type": "string"
+    },
+    "params": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Params",
+      "type": "object"
+    },
+    "procedure_id": {
+      "title": "Procedure Id",
+      "type": "string"
+    },
+    "repeat_index": {
+      "minimum": 0,
+      "title": "Repeat Index",
+      "type": "integer"
+    },
+    "revision": {
+      "title": "Revision",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "started_utc": {
+      "format": "date-time",
+      "title": "Started Utc",
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "running",
+        "paused",
+        "completed",
+        "cancelled",
+        "failed"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "step_index": {
+      "minimum": 0,
+      "title": "Step Index",
+      "type": "integer"
+    },
+    "updated_utc": {
+      "format": "date-time",
+      "title": "Updated Utc",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "case_id",
+    "procedure_id",
+    "revision",
+    "state",
+    "step_index",
+    "repeat_index",
+    "started_utc",
+    "updated_utc"
+  ],
+  "title": "ProcedureRun",
+  "type": "object"
+}

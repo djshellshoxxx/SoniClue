@@ -1,0 +1,179 @@
+{
+  "$defs": {
+    "ReportSection": {
+      "additionalProperties": false,
+      "properties": {
+        "figures": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Figures",
+          "type": "array"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "statements": {
+          "items": {
+            "$ref": "#/$defs/ReportStatement"
+          },
+          "title": "Statements",
+          "type": "array"
+        },
+        "tables": {
+          "items": {
+            "$ref": "#/$defs/ReportTable"
+          },
+          "title": "Tables",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "title"
+      ],
+      "title": "ReportSection",
+      "type": "object"
+    },
+    "ReportStatement": {
+      "additionalProperties": false,
+      "properties": {
+        "cls": {
+          "$ref": "#/$defs/StatementClass"
+        },
+        "refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Refs",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cls",
+        "text"
+      ],
+      "title": "ReportStatement",
+      "type": "object"
+    },
+    "ReportTable": {
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Columns",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "columns",
+        "rows"
+      ],
+      "title": "ReportTable",
+      "type": "object"
+    },
+    "StatementClass": {
+      "enum": [
+        "measured",
+        "calculated",
+        "inferred",
+        "user_asserted",
+        "unresolved"
+      ],
+      "title": "StatementClass",
+      "type": "string"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/report-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "case_digest": {
+      "title": "Case Digest",
+      "type": "string"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "created_utc": {
+      "format": "date-time",
+      "title": "Created Utc",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "redactions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Redactions",
+      "type": "array"
+    },
+    "report_version": {
+      "minimum": 1,
+      "title": "Report Version",
+      "type": "integer"
+    },
+    "ruleset_version": {
+      "title": "Ruleset Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sections": {
+      "items": {
+        "$ref": "#/$defs/ReportSection"
+      },
+      "title": "Sections",
+      "type": "array"
+    },
+    "software_version": {
+      "title": "Software Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "case_id",
+    "report_version",
+    "created_utc",
+    "software_version",
+    "ruleset_version",
+    "case_digest",
+    "sections"
+  ],
+  "title": "ReportDocument",
+  "type": "object"
+}

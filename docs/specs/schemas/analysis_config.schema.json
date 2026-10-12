@@ -1,0 +1,122 @@
+{
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/analysis_config-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "band_type": {
+      "default": "third_octave",
+      "enum": [
+        "octave",
+        "third_octave"
+      ],
+      "title": "Band Type",
+      "type": "string"
+    },
+    "coherence_alpha": {
+      "default": 0.05,
+      "exclusiveMaximum": 0.5,
+      "exclusiveMinimum": 0,
+      "title": "Coherence Alpha",
+      "type": "number"
+    },
+    "event_frame_s": {
+      "default": 0.01,
+      "exclusiveMinimum": 0,
+      "maximum": 1,
+      "title": "Event Frame S",
+      "type": "number"
+    },
+    "event_threshold_db": {
+      "default": 8.0,
+      "maximum": 60,
+      "minimum": 3,
+      "title": "Event Threshold Db",
+      "type": "number"
+    },
+    "fmax_hz": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fmax Hz"
+    },
+    "fmin_hz": {
+      "default": 10.0,
+      "minimum": 0,
+      "title": "Fmin Hz",
+      "type": "number"
+    },
+    "max_peaks": {
+      "default": 25,
+      "maximum": 500,
+      "minimum": 1,
+      "title": "Max Peaks",
+      "type": "integer"
+    },
+    "min_averages": {
+      "default": 8,
+      "maximum": 10000,
+      "minimum": 1,
+      "title": "Min Averages",
+      "type": "integer"
+    },
+    "min_nperseg": {
+      "default": 256,
+      "minimum": 16,
+      "title": "Min Nperseg",
+      "type": "integer"
+    },
+    "overlap": {
+      "default": 0.5,
+      "exclusiveMaximum": 0.95,
+      "minimum": 0,
+      "title": "Overlap",
+      "type": "number"
+    },
+    "resolution_hz": {
+      "default": 1.0,
+      "exclusiveMinimum": 0,
+      "maximum": 100,
+      "title": "Resolution Hz",
+      "type": "number"
+    },
+    "spectrogram_nperseg": {
+      "default": 4096,
+      "minimum": 64,
+      "title": "Spectrogram Nperseg",
+      "type": "integer"
+    },
+    "store_arrays": {
+      "default": true,
+      "title": "Store Arrays",
+      "type": "boolean"
+    },
+    "tone_prominence_db": {
+      "default": 10.0,
+      "maximum": 60,
+      "minimum": 3,
+      "title": "Tone Prominence Db",
+      "type": "number"
+    },
+    "window": {
+      "default": "hann",
+      "enum": [
+        "hann",
+        "hamming",
+        "blackmanharris",
+        "flattop",
+        "boxcar"
+      ],
+      "title": "Window",
+      "type": "string"
+    }
+  },
+  "title": "AnalysisConfig",
+  "type": "object"
+}
