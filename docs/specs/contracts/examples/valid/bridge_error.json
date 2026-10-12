@@ -1,0 +1,5 @@
+{
+  "type": "error",
+  "code": 3,
+  "message": "FIFO overrun"
+}

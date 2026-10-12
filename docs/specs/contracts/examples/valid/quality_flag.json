@@ -1,0 +1,7 @@
+{
+  "code": "dropout_gap",
+  "severity": "warning",
+  "message": "1 dropout zero-filled",
+  "start_frame": 480000,
+  "end_frame": 481024
+}

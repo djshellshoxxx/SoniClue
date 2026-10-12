@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0.0",
+  "id": "an-0001",
+  "capture_id": "cap-0123456789ab",
+  "created_utc": "2026-10-12T12:00:00Z",
+  "config": {
+    "window": "hann",
+    "resolution_hz": 1.0,
+    "overlap": 0.5,
+    "min_averages": 8,
+    "min_nperseg": 256,
+    "fmin_hz": 10.0,
+    "tone_prominence_db": 10.0,
+    "max_peaks": 25,
+    "event_threshold_db": 8.0,
+    "event_frame_s": 0.01,
+    "band_type": "third_octave",
+    "coherence_alpha": 0.05,
+    "spectrogram_nperseg": 4096,
+    "store_arrays": true
+  },
+  "algorithm_version": "1.0.0",
+  "tier": 5,
+  "channels": [
+    {
+      "channel": 0,
+      "label": "mic",
+      "quantity": "sound_pressure",
+      "unit": "Pa",
+      "calibrated": true,
+      "levels": {
+        "rms": 0.02,
+        "peak": 0.08,
+        "crest_db": {
+          "status": "valid",
+          "value": 12.3
+        },
+        "level_db": 60.0,
+        "level_ref": "dB re 20 uPa",
+        "unit": "Pa",
+        "calibrated": true,
+        "dc_offset_fs": 0.0
+      },
+      "noise_floor_db": 10.0,
+      "peaks": [
+        {
+          "freq_hz": 117.0,
+          "level_db": 55.0,
+          "prominence_db": 30.0,
+          "rms": 0.011,
+          "q": {
+            "status": "unavailable",
+            "reason": "resolution-limited"
+          },
+          "cal_in_band": true
+        }
+      ],
+      "families": [
+        {
+          "f0_hz": 117.0,
+          "orders": [
+            1,
+            2,
+            3
+          ],
+          "mains": "none"
+        }
+      ],
+      "transients": {
+        "event_count": 0,
+        "events_per_min": 0.0,
+        "median_interval_s": {
+          "status": "unavailable",
+          "reason": "fewer than two events"
+        },
+        "periodic": false,
+        "max_excess_db": 3.0,
+        "event_times_s": []
+      },
+      "bands": [
+        {
+          "center_hz": 125.89,
+          "low_hz": 112.2,
+          "high_hz": 141.25,
+          "level_db": 56.0,
+          "power": 0.0002,
+          "valid": true
+        }
+      ],
+      "n_averages": 20,
+      "nperseg": 32768,
+      "resolution_hz": 1.46,
+      "enbw_hz": 2.2,
+      "excluded_frames": 1024,
+      "quality": []
+    }
+  ],
+  "cross": [],
+  "arrays_file": "an-0001.npz",
+  "quality": [],
+  "software_version": "0.1.0+dev"
+}

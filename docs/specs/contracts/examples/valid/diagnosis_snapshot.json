@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "id": "dx-0001",
+  "case_id": "case-0123456789ab",
+  "created_utc": "2026-10-12T12:00:00Z",
+  "ruleset_version": "1.0.0",
+  "conclusion": "leading_explanation",
+  "abstention_reasons": [],
+  "evidence": [
+    {
+      "id": "ev-se-0001",
+      "kind": "state_effect",
+      "statement_class": "calculated",
+      "summary": "Tone 117.0 Hz fell by 35.0 dB with pc off",
+      "params": {
+        "subject": "pc",
+        "delta_db": -35.0
+      },
+      "sources": [
+        "cmp-0001"
+      ],
+      "freq_hz": 117.0,
+      "valid": true
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "H-SRC-pc",
+      "category": "source",
+      "subject": "pc",
+      "statement": "Desktop computer is an excitation source",
+      "level": "supported",
+      "supporting": [
+        "ev-se-0001"
+      ],
+      "contradicting": [],
+      "missing_tests": [
+        "equipment_state:pc"
+      ],
+      "rules": [
+        "R-SRC-001@1"
+      ],
+      "explanation": [
+        "Switching it off changed the problem in 1 experiment"
+      ]
+    }
+  ],
+  "next_tests": [
+    {
+      "procedure_id": "isolation_comparison",
+      "title": "Isolation comparison",
+      "params": {
+        "target": "pc"
+      },
+      "reason": "Separates structural vs airborne path",
+      "discriminates": [
+        "H-STR-pc"
+      ],
+      "pairs_separated": 1,
+      "difficulty": 2,
+      "available": true,
+      "unavailable_reason": ""
+    }
+  ]
+}

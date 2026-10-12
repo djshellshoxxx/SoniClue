@@ -1,0 +1,115 @@
+{
+  "id": "equipment_state",
+  "revision": "1",
+  "title": "Equipment on/off comparison",
+  "purpose": "Test whether {target} contributes to the problem by switching it off and back on (A-B-A design).",
+  "min_tier": 1,
+  "required_sensors": [
+    "any"
+  ],
+  "parameters": [
+    "target"
+  ],
+  "preconditions": [
+    "{target} can be switched off safely without affecting other equipment",
+    "Sensors stay in exactly the same place"
+  ],
+  "confounds": [
+    "Other equipment changing state at the same time",
+    "Background noise changing between conditions",
+    "Switching {target} off also stops something else (shared power strip, cooling)"
+  ],
+  "safety": [
+    "Only switch equipment off if it is safe and normal to do so. Do not open equipment or bypass interlocks."
+  ],
+  "steps": [
+    {
+      "id": "on_1",
+      "kind": "capture",
+      "title": "{target} ON",
+      "instruction": "With {target} running normally, record.",
+      "expert_note": "",
+      "condition_label": "{target} on",
+      "equipment_state": {
+        "{target}": "on"
+      },
+      "position_id": "",
+      "settle_s": 3.0,
+      "duration_s": 15.0,
+      "repeats": 2,
+      "gates": [
+        "no_clipping",
+        "signal_present"
+      ]
+    },
+    {
+      "id": "switch_off",
+      "kind": "instruction",
+      "title": "Switch off",
+      "instruction": "Switch {target} OFF. Change nothing else. Wait until it has fully stopped (fans spun down).",
+      "expert_note": "",
+      "condition_label": "",
+      "equipment_state": {},
+      "position_id": "",
+      "settle_s": 0.0,
+      "duration_s": 0.0,
+      "repeats": 1,
+      "gates": []
+    },
+    {
+      "id": "off",
+      "kind": "capture",
+      "title": "{target} OFF",
+      "instruction": "Record with {target} off.",
+      "expert_note": "",
+      "condition_label": "{target} off",
+      "equipment_state": {
+        "{target}": "off"
+      },
+      "position_id": "",
+      "settle_s": 5.0,
+      "duration_s": 15.0,
+      "repeats": 2,
+      "gates": [
+        "no_clipping",
+        "comparable_to_first"
+      ]
+    },
+    {
+      "id": "switch_on",
+      "kind": "instruction",
+      "title": "Switch on again",
+      "instruction": "Switch {target} back ON and let it reach normal operation.",
+      "expert_note": "",
+      "condition_label": "",
+      "equipment_state": {},
+      "position_id": "",
+      "settle_s": 0.0,
+      "duration_s": 0.0,
+      "repeats": 1,
+      "gates": []
+    },
+    {
+      "id": "on_2",
+      "kind": "capture",
+      "title": "{target} ON again",
+      "instruction": "Record again with {target} on. This checks that nothing else changed.",
+      "expert_note": "",
+      "condition_label": "{target} on",
+      "equipment_state": {
+        "{target}": "on"
+      },
+      "position_id": "",
+      "settle_s": 5.0,
+      "duration_s": 15.0,
+      "repeats": 1,
+      "gates": [
+        "no_clipping",
+        "comparable_to_first"
+      ]
+    }
+  ],
+  "analysis": "state_comparison",
+  "success": "A comparable on/off/on sequence exists for {target}.",
+  "difficulty": 1
+}
