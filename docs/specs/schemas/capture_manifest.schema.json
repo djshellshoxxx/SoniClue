@@ -1,0 +1,718 @@
+{
+  "$defs": {
+    "CaptureContext": {
+      "additionalProperties": false,
+      "properties": {
+        "condition_label": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Condition Label",
+          "type": "string"
+        },
+        "environment": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Environment",
+          "type": "object"
+        },
+        "equipment_state": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Equipment State",
+          "type": "object"
+        },
+        "intervention": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InterventionRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "notes": {
+          "default": "",
+          "maxLength": 4000,
+          "title": "Notes",
+          "type": "string"
+        },
+        "procedure_revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Procedure Revision"
+        },
+        "procedure_run_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Procedure Run Id"
+        },
+        "procedure_step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Procedure Step"
+        },
+        "repeat_index": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Repeat Index",
+          "type": "integer"
+        }
+      },
+      "title": "CaptureContext",
+      "type": "object"
+    },
+    "ChannelConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "agc": {
+          "default": "unknown",
+          "enum": [
+            "off",
+            "on",
+            "unknown"
+          ],
+          "title": "Agc",
+          "type": "string"
+        },
+        "calibration_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Calibration Id"
+        },
+        "index": {
+          "maximum": 63,
+          "minimum": 0,
+          "title": "Index",
+          "type": "integer"
+        },
+        "input_gain_db": {
+          "anyOf": [
+            {
+              "maximum": 90,
+              "minimum": -60,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Gain Db"
+        },
+        "label": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "placement": {
+          "$ref": "#/$defs/Placement",
+          "default": {
+            "distance_m": null,
+            "location": "",
+            "mount_surface": "",
+            "mounting": "unknown",
+            "orientation": "",
+            "position_id": ""
+          }
+        },
+        "processing": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Processing",
+          "type": "array"
+        },
+        "sensor_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sensor Id"
+        }
+      },
+      "required": [
+        "index",
+        "label"
+      ],
+      "title": "ChannelConfig",
+      "type": "object"
+    },
+    "ChunkRef": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.\\-]+$",
+          "title": "File",
+          "type": "string"
+        },
+        "frames": {
+          "minimum": 0,
+          "title": "Frames",
+          "type": "integer"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "start_frame": {
+          "minimum": 0,
+          "title": "Start Frame",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file",
+        "start_frame",
+        "frames",
+        "sha256"
+      ],
+      "title": "ChunkRef",
+      "type": "object"
+    },
+    "DeviceInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "backend": {
+          "enum": [
+            "portaudio",
+            "simulated",
+            "file",
+            "bridge"
+          ],
+          "title": "Backend",
+          "type": "string"
+        },
+        "device_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Device Index"
+        },
+        "exclusive_mode": {
+          "default": false,
+          "title": "Exclusive Mode",
+          "type": "boolean"
+        },
+        "host_api": {
+          "default": "",
+          "maxLength": 64,
+          "title": "Host Api",
+          "type": "string"
+        },
+        "name": {
+          "default": "",
+          "maxLength": 200,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "backend"
+      ],
+      "title": "DeviceInfo",
+      "type": "object"
+    },
+    "Gap": {
+      "additionalProperties": false,
+      "properties": {
+        "end_frame": {
+          "minimum": 0,
+          "title": "End Frame",
+          "type": "integer"
+        },
+        "reason": {
+          "enum": [
+            "input_overflow",
+            "queue_overflow",
+            "device_error",
+            "dropout",
+            "import_gap"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "start_frame": {
+          "minimum": 0,
+          "title": "Start Frame",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_frame",
+        "end_frame",
+        "reason"
+      ],
+      "title": "Gap",
+      "type": "object"
+    },
+    "InterventionRecord": {
+      "additionalProperties": false,
+      "description": "What was physically changed. The four ``changes_*`` booleans drive the\nconfound check for ADV-007. None means the user did not say.",
+      "properties": {
+        "changes_measurement_setup": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Measurement Setup"
+        },
+        "changes_receiver": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Receiver"
+        },
+        "changes_source_output": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Source Output"
+        },
+        "changes_transmission_path": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changes Transmission Path"
+        },
+        "description": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "target": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "title": "InterventionRecord",
+      "type": "object"
+    },
+    "Mounting": {
+      "enum": [
+        "stand",
+        "handheld",
+        "wax",
+        "magnet",
+        "stud",
+        "adhesive",
+        "tape",
+        "clamp",
+        "resting",
+        "unknown"
+      ],
+      "title": "Mounting",
+      "type": "string"
+    },
+    "Placement": {
+      "additionalProperties": false,
+      "properties": {
+        "distance_m": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distance M"
+        },
+        "location": {
+          "default": "",
+          "maxLength": 200,
+          "title": "Location",
+          "type": "string"
+        },
+        "mount_surface": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Mount Surface",
+          "type": "string"
+        },
+        "mounting": {
+          "$ref": "#/$defs/Mounting",
+          "default": "unknown"
+        },
+        "orientation": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Orientation",
+          "type": "string"
+        },
+        "position_id": {
+          "default": "",
+          "maxLength": 64,
+          "title": "Position Id",
+          "type": "string"
+        }
+      },
+      "title": "Placement",
+      "type": "object"
+    },
+    "QualityCode": {
+      "enum": [
+        "clipping",
+        "near_clipping",
+        "dropout_gap",
+        "input_overflow",
+        "silence",
+        "low_signal",
+        "dc_offset",
+        "nonfinite",
+        "short_capture",
+        "insufficient_averages",
+        "agc_active",
+        "agc_unknown",
+        "cal_missing",
+        "cal_gain_mismatch",
+        "cal_expired",
+        "cal_out_of_band",
+        "sync_unverified",
+        "sync_ambiguous",
+        "sync_insufficient",
+        "clock_reset",
+        "mismatched_rate",
+        "nonuniform_timestamps",
+        "recovered_capture",
+        "partial_capture",
+        "device_disconnected",
+        "simulated_data",
+        "alias_risk",
+        "tier_limited"
+      ],
+      "title": "QualityCode",
+      "type": "string"
+    },
+    "QualityFlag": {
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Channel"
+        },
+        "code": {
+          "$ref": "#/$defs/QualityCode"
+        },
+        "end_frame": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Frame"
+        },
+        "message": {
+          "maxLength": 500,
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "start_frame": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start Frame"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "QualityFlag",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "info",
+        "warning",
+        "invalid"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "StimulusRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "sine",
+            "sweep",
+            "white",
+            "pink",
+            "band_noise",
+            "impulse"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "level_dbfs": {
+          "maximum": 0,
+          "title": "Level Dbfs",
+          "type": "number"
+        },
+        "output_device": {
+          "default": "",
+          "title": "Output Device",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Params",
+          "type": "object"
+        }
+      },
+      "required": [
+        "kind",
+        "level_dbfs"
+      ],
+      "title": "StimulusRecord",
+      "type": "object"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/capture_manifest-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "channels": {
+      "items": {
+        "$ref": "#/$defs/ChannelConfig"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "title": "Channels",
+      "type": "array"
+    },
+    "chunks": {
+      "items": {
+        "$ref": "#/$defs/ChunkRef"
+      },
+      "maxItems": 100000,
+      "title": "Chunks",
+      "type": "array"
+    },
+    "clock_domain": {
+      "title": "Clock Domain",
+      "type": "string"
+    },
+    "context": {
+      "$ref": "#/$defs/CaptureContext",
+      "default": {
+        "condition_label": "",
+        "environment": {},
+        "equipment_state": {},
+        "intervention": null,
+        "notes": "",
+        "procedure_revision": null,
+        "procedure_run_id": null,
+        "procedure_step": null,
+        "repeat_index": 0
+      }
+    },
+    "created_utc": {
+      "format": "date-time",
+      "title": "Created Utc",
+      "type": "string"
+    },
+    "device": {
+      "$ref": "#/$defs/DeviceInfo"
+    },
+    "frames": {
+      "minimum": 0,
+      "title": "Frames",
+      "type": "integer"
+    },
+    "gaps": {
+      "items": {
+        "$ref": "#/$defs/Gap"
+      },
+      "title": "Gaps",
+      "type": "array"
+    },
+    "id": {
+      "pattern": "^[A-Za-z0-9_\\-]{6,64}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "quality": {
+      "items": {
+        "$ref": "#/$defs/QualityFlag"
+      },
+      "title": "Quality",
+      "type": "array"
+    },
+    "sample_format": {
+      "const": "float32",
+      "default": "float32",
+      "title": "Sample Format",
+      "type": "string"
+    },
+    "sample_rate_hz": {
+      "exclusiveMinimum": 0,
+      "maximum": 768000,
+      "title": "Sample Rate Hz",
+      "type": "number"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "software_version": {
+      "title": "Software Version",
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "live",
+        "import",
+        "simulated"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "status": {
+      "default": "complete",
+      "enum": [
+        "complete",
+        "partial",
+        "recovered"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "stimulus": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StimulusRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "id",
+    "case_id",
+    "created_utc",
+    "source",
+    "device",
+    "sample_rate_hz",
+    "channels",
+    "frames",
+    "clock_domain",
+    "software_version"
+  ],
+  "title": "CaptureManifest",
+  "type": "object"
+}
