@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "id": "case-0123456789ab",
+  "title": "Low hum on vocal recordings",
+  "created_utc": "2026-10-12T12:00:00Z",
+  "updated_utc": "2026-10-12T12:00:00Z",
+  "problem": {
+    "summary": "hum at the desk",
+    "character": [
+      "squeal"
+    ],
+    "receiver": "vocal mic",
+    "approx_band_hz": [
+      30.0,
+      400.0
+    ],
+    "when": ""
+  },
+  "equipment": [
+    {
+      "id": "pc",
+      "name": "Desktop computer",
+      "kind": "computer",
+      "notes": ""
+    }
+  ],
+  "sensors": [
+    {
+      "id": "mic1",
+      "kind": "measurement_mic",
+      "model": "ECM8000",
+      "serial": "A123",
+      "quantity": "sound_pressure",
+      "axis": "omni",
+      "usable_band_hz": [
+        20.0,
+        20000.0
+      ],
+      "notes": ""
+    },
+    {
+      "id": "ct1",
+      "kind": "contact_pickup",
+      "model": "",
+      "serial": "",
+      "quantity": "relative",
+      "axis": "unknown",
+      "notes": ""
+    }
+  ],
+  "notes": ""
+}
