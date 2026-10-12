@@ -1,33 +1,42 @@
-# SoniClue: Continuation Record
+# SonicClue: Continuation Record
 
-Last updated: 2026-10-12
+Last updated: 2026-10-12 (session 3: spec package plus full application build).
 
 ## Current state
-- Default branch: `main`. The repository contains a README, the specification-authoring prompt, the implementation handoff, and the embedding checker.
-- **No baseline product specification exists in the repository yet** (DEC-000 is BLOCKED; owner: project owner).
-- No product code yet.
 
-## Completed
-- Repository access verified (2026-10-12):
-  - Clone, fetch and pull work over HTTPS (public repo).
-  - API write, branch, PR and merge work (PR #1, a throwaway access test).
-  - **CLI `git push` has no credentials.** Use the GitHub API, or configure a token.
-- `docs/prompts/specification-authoring-prompt.md` (SC-PROMPT-SPEC 1.0.0) and `docs/prompts/implementation-handoff.md` (SC-PROMPT-IMPL 1.0.0) embed all 12 developer-completeness requirements.
-- `tools/check_prompt_embedding.py` verifies the embedding. Last result: 422/422 checks passed. Negative check: removing one phrase makes it fail.
+* Product: **SonicClue 0.1.0**, software-complete and hardware-unqualified. Repository `djshellshoxxx/SoniClue`.
+* Delivered on branch `claude/sonicclue-v0.1.0` via a pull request into `main` (see the PR list for its number and merge state).
+* Specification package: `docs/specs/` (25 documents, 20 generated JSON Schemas, 47 contract examples, test vectors, decision register + 18 ADRs, coverage/wiring/validation/compatibility/backlog/risk/licence matrices, audit, handoff).
+* Code: `src/sonicclue/` (16 packages). Tests: 181, all passing on Linux. CI: `.github/workflows/ci.yml` (Ubuntu + Windows test and build; draft release on tag `v*`).
+* Linux bundle built locally: `SonicClue-0.1.0-linux-x64.tar.gz`, SHA-256 `3a502fcac7a46186de3710038485525c154759322b3a7042ba925f56aef6faf3` (also in the session outputs).
+
+## Completed requirements
+
+All R1 requirements in `docs/specs/01-product-requirements.md` are implemented and tested in software, except: hardware-dependent verification (UNEXECUTED), ASIO, ML diagnosis, signed installer and licence (BLOCKED). See `docs/specs/matrices/requirement-coverage.csv`.
 
 ## Blockers
+
 | ID | Blocker | Owner | Exit criterion |
 |---|---|---|---|
-| DEC-000 | Baseline product specification not supplied | Project owner | Specification committed under `spec/baseline/` |
-| ENV-001 | No CLI git push credentials | Project owner | Token configured, or continue using the API (not blocking) |
+| RISK-001 | no audio hardware: devices unqualified | owner | HQ-01..09 recorded (spec 18) |
+| DEC-009b | project licence undecided | owner | LICENSE committed |
+| DEC-009a | no code-signing certificate | owner | signed CI artifacts |
+| DEC-004b | sensor-bridge board not chosen | owner/hardware | board + firmware pass spec 06 §6 tests |
+| DEC-003a | ASIO licence | owner | agreement |
+| DEC-002 | reference machine not designated | owner | named machine; benchmarks rerun |
+| ENV-001 | CLI git push lacks credentials for this repository (credential helper scoped to a different repo name) | environment | use the GitHub API (works) or configure a token |
 
 ## Branches and PRs
+
 | Branch / PR | Disposition |
 |---|---|
-| PR #1 `claude/access-test-head` → `claude/access-test-base` | Merged (access test only; never touched `main`) |
-| `claude/access-test-base`, `claude/access-test-head` | Throwaway; delete them (the API tools available cannot delete branches) |
+| PR #1 (access test, into a throwaway base) | merged; throwaway branches `claude/access-test-base` and `claude/access-test-head` can be deleted (API tools cannot delete branches) |
+| PR #2 `claude/spec-prompt-and-handoff` | merged into `main` |
+| `claude/sonicclue-v0.1.0` | this delivery (spec package + application); see the PR list for merge state |
 
-## Next actions
-1. Obtain the baseline specification and commit it to `spec/baseline/`.
-2. Run SC-PROMPT-SPEC to produce the `spec/` package. Check it against the readiness gates (`spec/READINESS.md`).
-3. Start implementation under SC-PROMPT-IMPL for the specs marked ready.
+## Exact next actions
+
+1. Check the CI run for the delivery PR (Windows build artifact and smoke stage). If Windows fails, fix and re-push (TASK per spec 25).
+2. Owner: designate the reference machine; provide audio hardware; decide the licence; obtain a signing certificate.
+3. Run spec 18 HQ tests and update `docs/specs/matrices/compatibility-matrix.csv`.
+4. Continue `docs/specs/matrices/backlog.csv` in order (TASK-012 streamed analysis, TASK-042 independent review, TASK-040 real-world validation).
