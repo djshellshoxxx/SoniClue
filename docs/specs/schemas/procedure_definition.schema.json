@@ -1,0 +1,305 @@
+{
+  "$defs": {
+    "Mounting": {
+      "enum": [
+        "stand",
+        "handheld",
+        "wax",
+        "magnet",
+        "stud",
+        "adhesive",
+        "tape",
+        "clamp",
+        "resting",
+        "unknown"
+      ],
+      "title": "Mounting",
+      "type": "string"
+    },
+    "ProcStep": {
+      "additionalProperties": false,
+      "properties": {
+        "condition_label": {
+          "default": "",
+          "title": "Condition Label",
+          "type": "string"
+        },
+        "duration_s": {
+          "default": 0,
+          "maximum": 3600,
+          "minimum": 0,
+          "title": "Duration S",
+          "type": "number"
+        },
+        "equipment_state": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Equipment State",
+          "type": "object"
+        },
+        "expert_note": {
+          "default": "",
+          "title": "Expert Note",
+          "type": "string"
+        },
+        "gates": {
+          "items": {
+            "enum": [
+              "no_clipping",
+              "signal_present",
+              "comparable_to_first",
+              "sync_shared_clock"
+            ],
+            "type": "string"
+          },
+          "title": "Gates",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z0-9_]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "instruction": {
+          "title": "Instruction",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "instruction",
+            "capture",
+            "intervention"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "mounting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Mounting"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "position_id": {
+          "default": "",
+          "title": "Position Id",
+          "type": "string"
+        },
+        "repeats": {
+          "default": 1,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Repeats",
+          "type": "integer"
+        },
+        "sample_rate_hz": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sample Rate Hz"
+        },
+        "settle_s": {
+          "default": 0,
+          "maximum": 3600,
+          "minimum": 0,
+          "title": "Settle S",
+          "type": "number"
+        },
+        "stimulus": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StimulusRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "instruction"
+      ],
+      "title": "ProcStep",
+      "type": "object"
+    },
+    "StimulusRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "sine",
+            "sweep",
+            "white",
+            "pink",
+            "band_noise",
+            "impulse"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "level_dbfs": {
+          "maximum": 0,
+          "title": "Level Dbfs",
+          "type": "number"
+        },
+        "output_device": {
+          "default": "",
+          "title": "Output Device",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Params",
+          "type": "object"
+        }
+      },
+      "required": [
+        "kind",
+        "level_dbfs"
+      ],
+      "title": "StimulusRecord",
+      "type": "object"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/procedure_definition-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "analysis": {
+      "enum": [
+        "baseline",
+        "state_comparison",
+        "position_survey",
+        "contact_survey",
+        "intervention",
+        "resonance",
+        "chain_noise",
+        "alias_check",
+        "airborne_control",
+        "speaker_buzz"
+      ],
+      "title": "Analysis",
+      "type": "string"
+    },
+    "confounds": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Confounds",
+      "type": "array"
+    },
+    "difficulty": {
+      "maximum": 3,
+      "minimum": 1,
+      "title": "Difficulty",
+      "type": "integer"
+    },
+    "id": {
+      "pattern": "^[a-z0-9_]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "min_tier": {
+      "maximum": 5,
+      "minimum": 1,
+      "title": "Min Tier",
+      "type": "integer"
+    },
+    "parameters": {
+      "items": {
+        "enum": [
+          "target",
+          "object"
+        ],
+        "type": "string"
+      },
+      "title": "Parameters",
+      "type": "array"
+    },
+    "preconditions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Preconditions",
+      "type": "array"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "required_sensors": {
+      "items": {
+        "enum": [
+          "acoustic",
+          "vibration",
+          "any"
+        ],
+        "type": "string"
+      },
+      "title": "Required Sensors",
+      "type": "array"
+    },
+    "revision": {
+      "title": "Revision",
+      "type": "string"
+    },
+    "safety": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Safety",
+      "type": "array"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/ProcStep"
+      },
+      "minItems": 1,
+      "title": "Steps",
+      "type": "array"
+    },
+    "success": {
+      "title": "Success",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "revision",
+    "title",
+    "purpose",
+    "min_tier",
+    "steps",
+    "analysis",
+    "success",
+    "difficulty"
+  ],
+  "title": "ProcedureDef",
+  "type": "object"
+}
