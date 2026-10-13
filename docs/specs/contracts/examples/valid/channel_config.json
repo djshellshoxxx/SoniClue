@@ -1,0 +1,17 @@
+{
+  "index": 0,
+  "label": "mic",
+  "sensor_id": "mic1",
+  "calibration_id": "cal-0001",
+  "placement": {
+    "location": "desk, vocal position",
+    "position_id": "P1",
+    "distance_m": 0.4,
+    "orientation": "",
+    "mounting": "stand",
+    "mount_surface": ""
+  },
+  "input_gain_db": 30.0,
+  "agc": "off",
+  "processing": []
+}

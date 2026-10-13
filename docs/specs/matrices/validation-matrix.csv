@@ -1,0 +1,33 @@
+val_id,requirement_ids,gate,fixture_or_hw_config,reference_method,command,expected,tolerance,kind,must_fail_case,status
+VAL-DSP-03,REQ-DSP-001,spectral normalisation,FIX-03 white noise; 64-pt random,Parseval; direct DFT,pytest tests/test_dsp_numerics.py -k inv003,sum(PSD)df = var; DC/Nyquist not doubled,2% / 1e-10,software,naive gap inclusion under-reads >10% (INV-010),PASSED
+VAL-DSP-04,REQ-DSP-003,tone power,FIX-01 off-bin sines x4 windows,closed form A^2/2,pytest -k inv004,within 1%,rtol 0.01,software,-,PASSED
+VAL-DSP-05,REQ-DSP-006,cross-spectrum orientation,FIX-14 delayed noise,phase -2*pi*f*tau,pytest -k inv005,phase within 0.05 rad,0.05 rad,software,swapped channels give +2*pi*f*tau,PASSED
+VAL-DSP-08,REQ-DSP-007,band integration,FIX-03,arithmetic additivity,pytest -k inv008,exact additivity,1e-12,software,-,PASSED
+VAL-DSP-10,REQ-DSP-002 REQ-WF-004,missing-data exclusion,FIX-08,clean variance,pytest -k inv010,within 3%,3%,software,naive analysis fails by >10%,PASSED
+VAL-DSP-12,REQ-DSP-008,optimisation equivalence,FIX-03,scipy single call/spectrogram,pytest -k "blocked or spectrogram",identical,1e-10/1e-9,software,-,PASSED
+VAL-CON-01,REQ-STO-003 REQ-SEN-001,schema validation,20 valid + 27 invalid examples,jsonschema + pydantic,python docs/specs/contracts/validate_examples.py,47/47 as declared,exact,software,27 invalid examples incl. traversal chunk name & newer schema,PASSED
+VAL-CAL-01,REQ-CAL-001 REQ-CAL-004,calibration application,FIX-01 94 dB calibrator,closed form,pytest -k calibrate_from_94db,sensitivity within 0.2%,0.2%,software,4 rejection fixtures (noise/no tone/unstable/short),PASSED
+VAL-CAL-02,REQ-CAL-002 REQ-CAL-003,calibration direction,80 dB tone through 0.02 FS/Pa,closed form,pytest -k inv006,80.0 dB SPL,0.1 dB,software,gain mismatch refuses calibration,PASSED
+VAL-CAL-03,REQ-SEN-002,relative-only enforcement,contact pickup,contract rule,pytest -k contact_pickup_cannot,refused,exact,software,attempt must raise,PASSED
+VAL-CAL-04,REQ-SEN-003,tiers,sensor sets,definition,pytest -k capability_tiers,tiers 1-5,exact,software,-,PASSED
+VAL-SYN-02,REQ-SYN-002,synchronization,FIX-09 drift 40 ppm offset 12.3 ms,known truth,pytest -k sync_offset,error <= 3 sigma_reported + 1 sample,stated,software,unrelated recordings rejected; periodic ambiguous; reset,PASSED
+VAL-SYN-03,REQ-SYN-003,sync eligibility,periodic sine; jump,definition,pytest -k "ambiguous or reset",eligible_max_freq=0,exact,software,(these are the must-fail cases),PASSED
+VAL-CMP-01,REQ-CMP-001 REQ-WF-009,comparability,FIX-10 mount/AGC/position,rules table,pytest -k "adv004 or adv005 or adv008",not comparable,exact,software,(must-fail by design),PASSED
+VAL-CMP-02,REQ-CMP-002,uncertainty & min effect,dB lists,t-interval,pytest -k compare_levels,significance as specified,stated,software,tight-but-<1 dB not significant,PASSED
+VAL-DX-01,REQ-DX-004 REQ-PRN-001,diagnostic abstention & counterexamples,ADV-001..010 fixtures,expected behaviour table,pytest tests/test_diagnostics_adversarial.py,all pass,exact,software,baseline-only inconclusive; coherence-only undetermined; confounded fix,PASSED
+VAL-DX-05,REQ-DX-001,determinism,on/off fixture,repeat run,pytest -k deterministic,identical,exact,software,-,PASSED
+VAL-E2E-01,REQ-ACQ-015,end-to-end simulated ground truth,FIX-17 SimWorld,known model,pytest -k demo_diagnosis,pc source+structural strong; hvac supported; hvac structural undetermined,exact,simulated,fan-tone evidence must not transfer to hvac,PASSED
+VAL-STO-01,REQ-ACQ-010 REQ-WF-014,lossless immutable storage,random float32,bit-exact,pytest -k capture_roundtrip,bit-exact,exact,software,overwrite/delete refused,PASSED
+VAL-STO-02,REQ-ACQ-009,crash recovery,partial journal,known frames,pytest -k crash_recovery,2 chunks recovered,exact,software,.part ignored,PASSED
+VAL-STO-04,REQ-STO-005,install/import integrity,malicious archives,safety rules,pytest -k archive,rejected,exact,software,traversal/bomb/symlink/tampered/mismatch,PASSED
+VAL-STO-05,REQ-STO-006,integrity verification,tampered chunk; damaged doc,checksums,pytest -k "verify or damaged",detected,exact,software,(must-fail by design),PASSED
+VAL-ACQ-01,REQ-ACQ-004 REQ-ACQ-005,backpressure,slow sink,timeline,pytest -k queue_overflow,gaps zero-filled; frames exact,exact,simulated,-,PASSED
+VAL-ACQ-02,REQ-ACQ-007,device loss,fail_after_frames,partial kept,pytest -k disconnect,FAILED state + data,exact,simulated,-,PASSED
+VAL-STIM-01,REQ-STIM-001..004,output safety,simulated output,state machine,pytest -k "output or level_and or arm_expiry",interlocks hold,exact,simulated,play without arm/confirm/expired/feedback must fail,PASSED
+VAL-REP-01,REQ-REP-001..003,reports,demo case,format checks,pytest -k reports_all_formats,all classes; 4 formats; redaction,exact,software,-,PASSED
+VAL-UI-01,REQ-UI-001 REQ-WF-001..002,GUI wiring,offscreen Qt,control-driven flow,QT_QPA_PLATFORM=offscreen pytest tests/test_gui.py,flow completes without errors,exact,software,-,PASSED
+VAL-UI-03,REQ-UI-005,CLI,simulated,exit codes,pytest -k cli_end_to_end,commands succeed; errors 1/2,exact,software,bad device→1; unknown case→2; no --confirm→1,PASSED
+VAL-PKG-01,REQ-PKG-002 REQ-SEC-003,packaging (Linux),frozen bundle clean env,smoke commands,python packaging/build.py,smoke passes; checksum written,exact,software,-,PASSED (build VM)
+VAL-PKG-01W,REQ-PKG-001,packaging (Windows),frozen bundle on windows-latest,smoke commands,CI build job,smoke passes,exact,software,-,SEE FINAL REPORT
+VAL-PERF-01,REQ-PERF-001,performance,60 s x 2 ch,budget,python tools/benchmark.py,<=10 s on reference machine,-,software,-,MEASURED ON BUILD VM ONLY (1.9 s)
+HQ-01..09,REQ-QA-001 REQ-PERF-002 REQ-ACQ-001/003/006 REQ-CAL-001 REQ-SYN-002 REQ-STIM-003,hardware qualification,spec 18 configurations,spec 18 criteria,spec 18,spec 18,spec 18,hardware,loopback failure must mark FAILED,UNEXECUTED (no hardware)

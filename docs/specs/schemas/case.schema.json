@@ -1,0 +1,290 @@
+{
+  "$defs": {
+    "Equipment": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9_]{1,40}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "fan",
+            "computer",
+            "hvac",
+            "speaker",
+            "amplifier",
+            "machine",
+            "appliance",
+            "lighting",
+            "power",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "notes": {
+          "default": "",
+          "maxLength": 1000,
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind"
+      ],
+      "title": "Equipment",
+      "type": "object"
+    },
+    "ProblemDescription": {
+      "additionalProperties": false,
+      "properties": {
+        "approx_band_hz": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approx Band Hz"
+        },
+        "character": {
+          "items": {
+            "enum": [
+              "hum",
+              "buzz",
+              "rattle",
+              "whine",
+              "rumble",
+              "tonal",
+              "broadband",
+              "intermittent",
+              "continuous",
+              "felt_vibration"
+            ],
+            "type": "string"
+          },
+          "title": "Character",
+          "type": "array"
+        },
+        "receiver": {
+          "default": "",
+          "maxLength": 200,
+          "title": "Receiver",
+          "type": "string"
+        },
+        "summary": {
+          "default": "",
+          "maxLength": 4000,
+          "title": "Summary",
+          "type": "string"
+        },
+        "when": {
+          "default": "",
+          "maxLength": 500,
+          "title": "When",
+          "type": "string"
+        }
+      },
+      "title": "ProblemDescription",
+      "type": "object"
+    },
+    "Quantity": {
+      "enum": [
+        "sound_pressure",
+        "acceleration",
+        "velocity",
+        "voltage",
+        "relative"
+      ],
+      "title": "Quantity",
+      "type": "string"
+    },
+    "SensorDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "axis": {
+          "default": "unknown",
+          "enum": [
+            "x",
+            "y",
+            "z",
+            "normal",
+            "omni",
+            "unknown"
+          ],
+          "title": "Axis",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_.\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/SensorKind"
+        },
+        "model": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Model",
+          "type": "string"
+        },
+        "notes": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Notes",
+          "type": "string"
+        },
+        "quantity": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "serial": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Serial",
+          "type": "string"
+        },
+        "usable_band_hz": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usable Band Hz"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "quantity"
+      ],
+      "title": "SensorDescriptor",
+      "type": "object"
+    },
+    "SensorKind": {
+      "enum": [
+        "measurement_mic",
+        "studio_mic",
+        "builtin_mic",
+        "contact_pickup",
+        "piezo_disc",
+        "analog_accelerometer",
+        "mems_accelerometer",
+        "line_input",
+        "other"
+      ],
+      "title": "SensorKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/case-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "created_utc": {
+      "format": "date-time",
+      "title": "Created Utc",
+      "type": "string"
+    },
+    "equipment": {
+      "items": {
+        "$ref": "#/$defs/Equipment"
+      },
+      "maxItems": 200,
+      "title": "Equipment",
+      "type": "array"
+    },
+    "id": {
+      "pattern": "^[A-Za-z0-9_\\-]{6,64}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "maxLength": 20000,
+      "title": "Notes",
+      "type": "string"
+    },
+    "problem": {
+      "$ref": "#/$defs/ProblemDescription",
+      "default": {
+        "approx_band_hz": null,
+        "character": [],
+        "receiver": "",
+        "summary": "",
+        "when": ""
+      }
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sensors": {
+      "items": {
+        "$ref": "#/$defs/SensorDescriptor"
+      },
+      "maxItems": 200,
+      "title": "Sensors",
+      "type": "array"
+    },
+    "title": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "updated_utc": {
+      "format": "date-time",
+      "title": "Updated Utc",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "created_utc",
+    "updated_utc"
+  ],
+  "title": "Case",
+  "type": "object"
+}

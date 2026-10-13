@@ -1,0 +1,175 @@
+{
+  "$defs": {
+    "FrPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "correction_db": {
+          "maximum": 60,
+          "minimum": -60,
+          "title": "Correction Db",
+          "type": "number"
+        },
+        "freq_hz": {
+          "exclusiveMinimum": 0,
+          "title": "Freq Hz",
+          "type": "number"
+        }
+      },
+      "required": [
+        "freq_hz",
+        "correction_db"
+      ],
+      "title": "FrPoint",
+      "type": "object"
+    },
+    "Quantity": {
+      "enum": [
+        "sound_pressure",
+        "acceleration",
+        "velocity",
+        "voltage",
+        "relative"
+      ],
+      "title": "Quantity",
+      "type": "string"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/calibration_profile-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "``sensitivity_fs_per_unit``: digital RMS (FS) produced by 1 unit RMS of the\nphysical quantity at ``reference_freq_hz`` with the interface gain at\n``reference_gain_db``. Conversion: physical = FS / sensitivity (INV-006).\n\n``fr_correction`` holds dB values to ADD to a level measured in physical\nunits to obtain the true level (true_db = measured_db + correction_db),\ninterpolated linearly in dB over log-frequency. It is only valid inside\n``valid_band_hz``.",
+  "properties": {
+    "created_utc": {
+      "format": "date-time",
+      "title": "Created Utc",
+      "type": "string"
+    },
+    "device_name": {
+      "default": "",
+      "title": "Device Name",
+      "type": "string"
+    },
+    "expires_utc": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expires Utc"
+    },
+    "fr_correction": {
+      "items": {
+        "$ref": "#/$defs/FrPoint"
+      },
+      "maxItems": 4096,
+      "title": "Fr Correction",
+      "type": "array"
+    },
+    "id": {
+      "pattern": "^[A-Za-z0-9_\\-]{3,64}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "method": {
+      "enum": [
+        "calibrator",
+        "manufacturer_sheet",
+        "comparison",
+        "manual"
+      ],
+      "title": "Method",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "maxLength": 2000,
+      "title": "Notes",
+      "type": "string"
+    },
+    "quantity": {
+      "$ref": "#/$defs/Quantity"
+    },
+    "reference_freq_hz": {
+      "exclusiveMinimum": 0,
+      "title": "Reference Freq Hz",
+      "type": "number"
+    },
+    "reference_gain_db": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reference Gain Db"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sensitivity_fs_per_unit": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000.0,
+      "title": "Sensitivity Fs Per Unit",
+      "type": "number"
+    },
+    "sensor_id": {
+      "title": "Sensor Id",
+      "type": "string"
+    },
+    "source_capture_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Capture Id"
+    },
+    "uncertainty_db": {
+      "maximum": 20,
+      "minimum": 0,
+      "title": "Uncertainty Db",
+      "type": "number"
+    },
+    "valid_band_hz": {
+      "maxItems": 2,
+      "minItems": 2,
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Valid Band Hz",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "sensor_id",
+    "quantity",
+    "sensitivity_fs_per_unit",
+    "reference_freq_hz",
+    "valid_band_hz",
+    "uncertainty_db",
+    "method",
+    "created_utc"
+  ],
+  "title": "CalibrationProfile",
+  "type": "object"
+}

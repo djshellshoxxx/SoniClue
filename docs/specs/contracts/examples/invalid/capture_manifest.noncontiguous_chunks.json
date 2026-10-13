@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "id": "cap-0123456789ab",
+  "case_id": "case-0123456789ab",
+  "created_utc": "2026-10-12T12:00:00Z",
+  "source": "live",
+  "device": {
+    "backend": "portaudio",
+    "host_api": "Windows WASAPI",
+    "name": "USB Audio CODEC",
+    "device_index": 3,
+    "exclusive_mode": false
+  },
+  "sample_rate_hz": 48000.0,
+  "sample_format": "float32",
+  "channels": [
+    {
+      "index": 0,
+      "label": "mic",
+      "sensor_id": "mic1",
+      "calibration_id": "cal-0001",
+      "placement": {
+        "location": "desk, vocal position",
+        "position_id": "P1",
+        "distance_m": 0.4,
+        "orientation": "",
+        "mounting": "stand",
+        "mount_surface": ""
+      },
+      "input_gain_db": 30.0,
+      "agc": "off",
+      "processing": []
+    },
+    {
+      "index": 1,
+      "label": "desk",
+      "sensor_id": "ct1",
+      "placement": {
+        "location": "desk top",
+        "position_id": "C1",
+        "orientation": "+z normal",
+        "mounting": "wax",
+        "mount_surface": ""
+      },
+      "input_gain_db": 20.0,
+      "agc": "off",
+      "processing": []
+    }
+  ],
+  "frames": 960000,
+  "chunks": [
+    {
+      "file": "chunk_00000.wav",
+      "start_frame": 0,
+      "frames": 480000,
+      "sha256": "000000000000000000000000000000000000000000000000000000000000000a"
+    },
+    {
+      "file": "chunk_00001.wav",
+      "start_frame": 10,
+      "frames": 480000,
+      "sha256": "000000000000000000000000000000000000000000000000000000000000000a"
+    }
+  ],
+  "gaps": [
+    {
+      "start_frame": 480000,
+      "end_frame": 481024,
+      "reason": "queue_overflow"
+    }
+  ],
+  "quality": [
+    {
+      "code": "dropout_gap",
+      "severity": "warning",
+      "message": "1 dropout zero-filled",
+      "start_frame": 480000,
+      "end_frame": 481024
+    }
+  ],
+  "clock_domain": "portaudio:USB Audio CODEC:cap-0123456789ab",
+  "status": "complete",
+  "context": {
+    "condition_label": "pc off",
+    "equipment_state": {
+      "pc": "off"
+    },
+    "environment": {},
+    "procedure_run_id": "run-0123456789ab",
+    "procedure_step": "off",
+    "procedure_revision": "1",
+    "repeat_index": 0,
+    "notes": ""
+  },
+  "software_version": "0.1.0+dev"
+}

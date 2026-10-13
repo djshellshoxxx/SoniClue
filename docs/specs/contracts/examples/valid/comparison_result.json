@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "id": "cmp-0001",
+  "case_id": "case-0123456789ab",
+  "kind": "state",
+  "procedure_run_id": "run-0123456789ab",
+  "label_a": "pc on",
+  "label_b": "pc off",
+  "captures_a": [
+    "cap-a"
+  ],
+  "captures_b": [
+    "cap-b"
+  ],
+  "channel_label": "mic",
+  "comparable": true,
+  "issues": [],
+  "overall_delta_db": -6.2,
+  "overall_uncertainty_db": 0.6,
+  "overall_significant": true,
+  "repeatability": "measured",
+  "band_deltas": [
+    {
+      "center_hz": 125.89,
+      "delta_db": -15.0,
+      "uncertainty_db": 0.8,
+      "significant": true
+    }
+  ],
+  "tone_deltas": [
+    {
+      "freq_hz": 117.0,
+      "level_a_db": 55.0,
+      "level_b_db": 20.0,
+      "delta_db": -35.0,
+      "status": "disappeared"
+    }
+  ],
+  "changed_equipment": {
+    "pc": [
+      "on",
+      "off"
+    ]
+  },
+  "algorithm_version": "1.0.0",
+  "created_utc": "2026-10-12T12:00:00Z"
+}

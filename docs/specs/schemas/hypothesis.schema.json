@@ -1,0 +1,109 @@
+{
+  "$defs": {
+    "HypothesisCategory": {
+      "enum": [
+        "source",
+        "additional_source",
+        "structural_path",
+        "airborne_path",
+        "resonance",
+        "rattle",
+        "electrical_hum",
+        "recording_chain",
+        "measurement_artifact"
+      ],
+      "title": "HypothesisCategory",
+      "type": "string"
+    },
+    "SupportLevel": {
+      "enum": [
+        "strongly_supported",
+        "supported",
+        "undetermined",
+        "weakened",
+        "contradicted"
+      ],
+      "title": "SupportLevel",
+      "type": "string"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/hypothesis-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "$ref": "#/$defs/HypothesisCategory"
+    },
+    "contradicting": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Contradicting",
+      "type": "array"
+    },
+    "explanation": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Explanation",
+      "type": "array"
+    },
+    "freq_hz": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Freq Hz"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "level": {
+      "$ref": "#/$defs/SupportLevel"
+    },
+    "missing_tests": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Tests",
+      "type": "array"
+    },
+    "rules": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Rules",
+      "type": "array"
+    },
+    "statement": {
+      "title": "Statement",
+      "type": "string"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    },
+    "supporting": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Supporting",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "category",
+    "subject",
+    "statement",
+    "level"
+  ],
+  "title": "Hypothesis",
+  "type": "object"
+}

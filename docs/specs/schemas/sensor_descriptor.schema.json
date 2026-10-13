@@ -1,0 +1,108 @@
+{
+  "$defs": {
+    "Quantity": {
+      "enum": [
+        "sound_pressure",
+        "acceleration",
+        "velocity",
+        "voltage",
+        "relative"
+      ],
+      "title": "Quantity",
+      "type": "string"
+    },
+    "SensorKind": {
+      "enum": [
+        "measurement_mic",
+        "studio_mic",
+        "builtin_mic",
+        "contact_pickup",
+        "piezo_disc",
+        "analog_accelerometer",
+        "mems_accelerometer",
+        "line_input",
+        "other"
+      ],
+      "title": "SensorKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/sensor_descriptor-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "axis": {
+      "default": "unknown",
+      "enum": [
+        "x",
+        "y",
+        "z",
+        "normal",
+        "omni",
+        "unknown"
+      ],
+      "title": "Axis",
+      "type": "string"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_.\\-]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/SensorKind"
+    },
+    "model": {
+      "default": "",
+      "maxLength": 120,
+      "title": "Model",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "maxLength": 2000,
+      "title": "Notes",
+      "type": "string"
+    },
+    "quantity": {
+      "$ref": "#/$defs/Quantity"
+    },
+    "serial": {
+      "default": "",
+      "maxLength": 120,
+      "title": "Serial",
+      "type": "string"
+    },
+    "usable_band_hz": {
+      "anyOf": [
+        {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Usable Band Hz"
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "quantity"
+  ],
+  "title": "SensorDescriptor",
+  "type": "object"
+}

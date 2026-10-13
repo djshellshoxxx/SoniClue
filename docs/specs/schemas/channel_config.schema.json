@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "Mounting": {
+      "enum": [
+        "stand",
+        "handheld",
+        "wax",
+        "magnet",
+        "stud",
+        "adhesive",
+        "tape",
+        "clamp",
+        "resting",
+        "unknown"
+      ],
+      "title": "Mounting",
+      "type": "string"
+    },
+    "Placement": {
+      "additionalProperties": false,
+      "properties": {
+        "distance_m": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distance M"
+        },
+        "location": {
+          "default": "",
+          "maxLength": 200,
+          "title": "Location",
+          "type": "string"
+        },
+        "mount_surface": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Mount Surface",
+          "type": "string"
+        },
+        "mounting": {
+          "$ref": "#/$defs/Mounting",
+          "default": "unknown"
+        },
+        "orientation": {
+          "default": "",
+          "maxLength": 120,
+          "title": "Orientation",
+          "type": "string"
+        },
+        "position_id": {
+          "default": "",
+          "maxLength": 64,
+          "title": "Position Id",
+          "type": "string"
+        }
+      },
+      "title": "Placement",
+      "type": "object"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/channel_config-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "agc": {
+      "default": "unknown",
+      "enum": [
+        "off",
+        "on",
+        "unknown"
+      ],
+      "title": "Agc",
+      "type": "string"
+    },
+    "calibration_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Calibration Id"
+    },
+    "index": {
+      "maximum": 63,
+      "minimum": 0,
+      "title": "Index",
+      "type": "integer"
+    },
+    "input_gain_db": {
+      "anyOf": [
+        {
+          "maximum": 90,
+          "minimum": -60,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Input Gain Db"
+    },
+    "label": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "placement": {
+      "$ref": "#/$defs/Placement",
+      "default": {
+        "distance_m": null,
+        "location": "",
+        "mount_surface": "",
+        "mounting": "unknown",
+        "orientation": "",
+        "position_id": ""
+      }
+    },
+    "processing": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Processing",
+      "type": "array"
+    },
+    "sensor_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sensor Id"
+    }
+  },
+  "required": [
+    "index",
+    "label"
+  ],
+  "title": "ChannelConfig",
+  "type": "object"
+}

@@ -1,0 +1,290 @@
+[
+  {
+    "id": "baseline",
+    "revision": "1",
+    "title": "Baseline measurement",
+    "purpose": "Record the problem as it normally occurs, so later tests have a reference.",
+    "min_tier": 1,
+    "required_sensors": ["any"],
+    "preconditions": ["Sensors are placed where the problem is heard or felt", "Interface gain set so the loudest moment stays below -6 dBFS", "Automatic gain control and audio enhancements are OFF"],
+    "confounds": ["Changing background noise (traffic, people)", "Equipment cycling on its own (thermostat, fan curves)"],
+    "safety": [],
+    "steps": [
+      {"id": "prepare", "kind": "instruction", "title": "Prepare", "instruction": "Keep the sensors fixed for the rest of the investigation. Note their positions. Keep the room as quiet as normal use allows.", "expert_note": "Position ids anchor comparability; changing them invalidates later comparisons."},
+      {"id": "baseline", "kind": "capture", "title": "Record baseline", "instruction": "Recording the normal situation. Stay quiet and still.", "condition_label": "baseline", "settle_s": 3, "duration_s": 20, "repeats": 2, "gates": ["no_clipping", "signal_present"]}
+    ],
+    "analysis": "baseline",
+    "success": "Two clean baseline captures are stored.",
+    "difficulty": 1
+  },
+  {
+    "id": "equipment_state",
+    "revision": "1",
+    "title": "Equipment on/off comparison",
+    "purpose": "Test whether {target} contributes to the problem by switching it off and back on (A-B-A design).",
+    "min_tier": 1,
+    "required_sensors": ["any"],
+    "parameters": ["target"],
+    "preconditions": ["{target} can be switched off safely without affecting other equipment", "Sensors stay in exactly the same place"],
+    "confounds": ["Other equipment changing state at the same time", "Background noise changing between conditions", "Switching {target} off also stops something else (shared power strip, cooling)"],
+    "safety": ["Only switch equipment off if it is safe and normal to do so. Do not open equipment or bypass interlocks."],
+    "steps": [
+      {"id": "on_1", "kind": "capture", "title": "{target} ON", "instruction": "With {target} running normally, record.", "condition_label": "{target} on", "equipment_state": {"{target}": "on"}, "settle_s": 3, "duration_s": 15, "repeats": 2, "gates": ["no_clipping", "signal_present"]},
+      {"id": "switch_off", "kind": "instruction", "title": "Switch off", "instruction": "Switch {target} OFF. Change nothing else. Wait until it has fully stopped (fans spun down)."},
+      {"id": "off", "kind": "capture", "title": "{target} OFF", "instruction": "Record with {target} off.", "condition_label": "{target} off", "equipment_state": {"{target}": "off"}, "settle_s": 5, "duration_s": 15, "repeats": 2, "gates": ["no_clipping", "comparable_to_first"]},
+      {"id": "switch_on", "kind": "instruction", "title": "Switch on again", "instruction": "Switch {target} back ON and let it reach normal operation."},
+      {"id": "on_2", "kind": "capture", "title": "{target} ON again", "instruction": "Record again with {target} on. This checks that nothing else changed.", "condition_label": "{target} on", "equipment_state": {"{target}": "on"}, "settle_s": 5, "duration_s": 15, "repeats": 1, "gates": ["no_clipping", "comparable_to_first"]}
+    ],
+    "analysis": "state_comparison",
+    "success": "A comparable on/off/on sequence exists for {target}.",
+    "difficulty": 1
+  },
+  {
+    "id": "source_location_survey",
+    "revision": "1",
+    "title": "Source location survey",
+    "purpose": "Move the microphone between positions near candidate sources to find where the problem is loudest.",
+    "min_tier": 1,
+    "required_sensors": ["acoustic"],
+    "preconditions": ["Equipment stays in its problem state throughout"],
+    "confounds": ["Room modes: at low frequency the loudest spot may be a room corner, not the source", "Moving the mic changes its distance to every source"],
+    "safety": [],
+    "steps": [
+      {"id": "p1", "kind": "capture", "title": "Position P1", "instruction": "Place the microphone about 30 cm from the first candidate source (P1).", "position_id": "P1", "condition_label": "survey P1", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]},
+      {"id": "p2", "kind": "capture", "title": "Position P2", "instruction": "Move the microphone about 30 cm from the second candidate source (P2).", "position_id": "P2", "condition_label": "survey P2", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]},
+      {"id": "p3", "kind": "capture", "title": "Position P3", "instruction": "Move the microphone to a third position (P3), for example the room centre or another candidate.", "position_id": "P3", "condition_label": "survey P3", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]}
+    ],
+    "analysis": "position_survey",
+    "success": "Levels at three positions are compared.",
+    "difficulty": 2
+  },
+  {
+    "id": "receiver_position_survey",
+    "revision": "1",
+    "title": "Receiver position survey",
+    "purpose": "Check how the problem varies across the positions where it matters (listening position, vocal mic spot).",
+    "min_tier": 1,
+    "required_sensors": ["acoustic"],
+    "preconditions": [],
+    "confounds": ["Standing waves give strong level changes over short distances at low frequency"],
+    "safety": [],
+    "steps": [
+      {"id": "r1", "kind": "capture", "title": "Receiver R1", "instruction": "Place the microphone at the main receiver position (R1).", "position_id": "R1", "condition_label": "receiver R1", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]},
+      {"id": "r2", "kind": "capture", "title": "Receiver R2", "instruction": "Move 50 cm to the side (R2).", "position_id": "R2", "condition_label": "receiver R2", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]},
+      {"id": "r3", "kind": "capture", "title": "Receiver R3", "instruction": "Move 50 cm to the other side (R3).", "position_id": "R3", "condition_label": "receiver R3", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]}
+    ],
+    "analysis": "position_survey",
+    "success": "Receiver-position spread is known.",
+    "difficulty": 1
+  },
+  {
+    "id": "contact_survey",
+    "revision": "1",
+    "title": "Contact sensor survey",
+    "purpose": "Move a contact sensor across objects (desk, stand, floor, equipment case) to find where vibration is strongest.",
+    "min_tier": 2,
+    "required_sensors": ["vibration"],
+    "preconditions": ["Use the same mounting method (wax, tape) at every point"],
+    "confounds": ["Contact pickups also respond to airborne sound", "Mounting quality changes sensitivity"],
+    "safety": [],
+    "steps": [
+      {"id": "c1", "kind": "capture", "title": "Point C1", "instruction": "Mount the contact sensor on the first object (C1), for example the desk top.", "position_id": "C1", "condition_label": "contact C1", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]},
+      {"id": "c2", "kind": "capture", "title": "Point C2", "instruction": "Move it to the second object (C2), for example the equipment case.", "position_id": "C2", "condition_label": "contact C2", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]},
+      {"id": "c3", "kind": "capture", "title": "Point C3", "instruction": "Move it to a third object (C3), for example the floor or the mic stand.", "position_id": "C3", "condition_label": "contact C3", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]}
+    ],
+    "analysis": "contact_survey",
+    "success": "Relative vibration at three points is compared.",
+    "difficulty": 2
+  },
+  {
+    "id": "vibration_survey",
+    "revision": "1",
+    "title": "Accelerometer vibration survey",
+    "purpose": "Measure vibration at several points with an accelerometer (physical units when calibrated).",
+    "min_tier": 3,
+    "required_sensors": ["vibration"],
+    "preconditions": ["Accelerometer mounted rigidly (stud, magnet, or thin wax) with a consistent orientation"],
+    "confounds": ["Mounting resonance of a soft mount", "Cable whip"],
+    "safety": ["Do not mount sensors on moving parts"],
+    "steps": [
+      {"id": "v1", "kind": "capture", "title": "Point V1", "instruction": "Mount the accelerometer at V1 (closest to the suspected source).", "position_id": "V1", "condition_label": "vibration V1", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]},
+      {"id": "v2", "kind": "capture", "title": "Point V2", "instruction": "Move to V2 (along the suspected path).", "position_id": "V2", "condition_label": "vibration V2", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]},
+      {"id": "v3", "kind": "capture", "title": "Point V3", "instruction": "Move to V3 (at the receiver).", "position_id": "V3", "condition_label": "vibration V3", "settle_s": 2, "duration_s": 10, "gates": ["no_clipping", "signal_present"]}
+    ],
+    "analysis": "contact_survey",
+    "success": "Vibration along the path is compared.",
+    "difficulty": 2
+  },
+  {
+    "id": "speaker_buzz",
+    "revision": "1",
+    "title": "Loudspeaker buzz / rattle assessment",
+    "purpose": "Play a slow, quiet sine sweep through {target} and detect buzzes and rattles, with the frequencies where they occur.",
+    "min_tier": 1,
+    "required_sensors": ["acoustic"],
+    "parameters": ["target"],
+    "preconditions": ["{target} connected to the selected output device", "Output level starts low; raise it only as far as normal listening"],
+    "confounds": ["Objects in the room rattling (not the speaker)", "Feedback if the mic is close to the speaker at high gain"],
+    "safety": ["The test signal is limited to -12 dBFS and stops automatically after the sweep", "Keep ears away from the speaker; stop immediately if anything sounds damaged"],
+    "steps": [
+      {"id": "prepare", "kind": "instruction", "title": "Prepare", "instruction": "Place the microphone 30-50 cm in front of {target}. Set the amplifier volume low. Arm the test signal when asked."},
+      {"id": "sweep", "kind": "capture", "title": "Sweep", "instruction": "A slow sweep from 30 Hz to 2 kHz plays through {target}. Listen for buzzes.", "condition_label": "{target} sweep", "duration_s": 20, "settle_s": 1, "gates": ["no_clipping", "signal_present"], "stimulus": {"kind": "sweep", "level_dbfs": -18, "params": {"f0": 30, "f1": 2000, "duration": 20}}}
+    ],
+    "analysis": "speaker_buzz",
+    "success": "Buzz events and their sweep frequencies are reported.",
+    "difficulty": 2
+  },
+  {
+    "id": "resonance_investigation",
+    "revision": "1",
+    "title": "Resonance (tap) test",
+    "purpose": "Tap {object} gently to find its natural (ringing) frequencies and compare them with the problem tones.",
+    "min_tier": 1,
+    "required_sensors": ["any"],
+    "parameters": ["object"],
+    "preconditions": ["The equipment that causes the problem is switched OFF during tapping, if possible"],
+    "confounds": ["Ringing of the sensor mount itself", "Tapping too hard (clipping)"],
+    "safety": ["Tap gently with a knuckle or rubber mallet; never strike fragile or energised equipment"],
+    "steps": [
+      {"id": "tap", "kind": "capture", "title": "Tap {object}", "instruction": "Tap {object} gently about once every two seconds near the sensor, until recording ends.", "condition_label": "tap {object}", "settle_s": 1, "duration_s": 15, "gates": ["no_clipping", "signal_present"]}
+    ],
+    "analysis": "resonance",
+    "success": "Ring frequencies of {object} are known.",
+    "difficulty": 1
+  },
+  {
+    "id": "isolation_comparison",
+    "revision": "1",
+    "title": "Isolation comparison",
+    "purpose": "Test whether vibration travelling from {target} through its supports matters, by adding isolation (pads, feet, decoupling).",
+    "min_tier": 1,
+    "required_sensors": ["any"],
+    "parameters": ["target"],
+    "preconditions": ["{target} keeps running in the same state throughout", "Sensors stay fixed"],
+    "confounds": ["Moving {target} while isolating it also changes its distance to the mic", "Isolation pads that change the source (for example blocking cooling vents)"],
+    "safety": ["Keep cooling vents free; lift equipment safely"],
+    "steps": [
+      {"id": "before", "kind": "capture", "title": "Before isolation", "instruction": "Record with {target} as it is now.", "condition_label": "{target} not isolated", "settle_s": 3, "duration_s": 15, "repeats": 2, "gates": ["no_clipping", "signal_present"]},
+      {"id": "change", "kind": "intervention", "title": "Add isolation", "instruction": "Add the isolation under {target}. Do not move it relative to the microphone, and change nothing else. Describe what you did."},
+      {"id": "after", "kind": "capture", "title": "After isolation", "instruction": "Record again with the isolation in place.", "condition_label": "{target} isolated", "settle_s": 5, "duration_s": 15, "repeats": 2, "gates": ["no_clipping", "comparable_to_first"]}
+    ],
+    "analysis": "intervention",
+    "success": "The effect of isolation on the problem is quantified.",
+    "difficulty": 2
+  },
+  {
+    "id": "damping_comparison",
+    "revision": "1",
+    "title": "Damping comparison",
+    "purpose": "Test whether {object} is ringing (resonating) by adding damping material or mass to it.",
+    "min_tier": 1,
+    "required_sensors": ["any"],
+    "parameters": ["object"],
+    "preconditions": ["Problem equipment keeps running in the same state"],
+    "confounds": ["Added material that also blocks airborne sound (changes the airborne path too)"],
+    "safety": [],
+    "steps": [
+      {"id": "before", "kind": "capture", "title": "Before damping", "instruction": "Record the current situation.", "condition_label": "{object} undamped", "settle_s": 3, "duration_s": 15, "repeats": 2, "gates": ["no_clipping", "signal_present"]},
+      {"id": "change", "kind": "intervention", "title": "Add damping", "instruction": "Add damping to {object} (for example a heavy book, damping pad or a hand pressed firmly on it). Change nothing else."},
+      {"id": "after", "kind": "capture", "title": "After damping", "instruction": "Record with the damping in place.", "condition_label": "{object} damped", "settle_s": 3, "duration_s": 15, "repeats": 2, "gates": ["no_clipping", "comparable_to_first"]}
+    ],
+    "analysis": "intervention",
+    "success": "The effect of damping is quantified.",
+    "difficulty": 1
+  },
+  {
+    "id": "mounting_change",
+    "revision": "1",
+    "title": "Mounting change comparison",
+    "purpose": "Test the transmission path by moving {target} to a different support (floor stand, another table) without changing its operation.",
+    "min_tier": 1,
+    "required_sensors": ["any"],
+    "parameters": ["target"],
+    "preconditions": ["{target} can be moved safely while keeping the same distance to the receiver where possible"],
+    "confounds": ["Distance to the microphone changes when equipment is moved", "Cables pulling on the old support"],
+    "safety": ["Lift equipment safely and keep cables strain-free"],
+    "steps": [
+      {"id": "before", "kind": "capture", "title": "Original mounting", "instruction": "Record with {target} on its original support.", "condition_label": "{target} original mount", "settle_s": 3, "duration_s": 15, "repeats": 2, "gates": ["no_clipping", "signal_present"]},
+      {"id": "change", "kind": "intervention", "title": "Move to another support", "instruction": "Move {target} to the new support. Keep its distance to the microphone the same. Describe what you did."},
+      {"id": "after", "kind": "capture", "title": "New mounting", "instruction": "Record with {target} on the new support.", "condition_label": "{target} new mount", "settle_s": 5, "duration_s": 15, "repeats": 2, "gates": ["no_clipping", "comparable_to_first"]}
+    ],
+    "analysis": "intervention",
+    "success": "The structural path contribution is estimated.",
+    "difficulty": 2
+  },
+  {
+    "id": "electrical_hum",
+    "revision": "1",
+    "title": "Electrical hum / recording-chain test",
+    "purpose": "Find out whether a hum or buzz is in the room or is generated electrically in the recording chain.",
+    "min_tier": 1,
+    "required_sensors": ["acoustic"],
+    "preconditions": ["Phantom power OFF before unplugging condenser microphones"],
+    "confounds": ["Unplugging changes grounding (a ground loop can disappear or appear)", "Hum radiated by a nearby transformer into the cable"],
+    "safety": ["Turn phantom power off before disconnecting a microphone; turn monitors down first to avoid pops"],
+    "steps": [
+      {"id": "normal", "kind": "capture", "title": "Normal", "instruction": "Record with the microphone connected as usual.", "condition_label": "input connected", "equipment_state": {"input": "connected"}, "settle_s": 2, "duration_s": 10, "gates": ["no_clipping"]},
+      {"id": "disconnect", "kind": "instruction", "title": "Disconnect the microphone", "instruction": "Turn phantom power off, then unplug the microphone at the interface. Leave the interface gain exactly the same."},
+      {"id": "terminated", "kind": "capture", "title": "Input without microphone", "instruction": "Record with no microphone connected.", "condition_label": "input terminated", "equipment_state": {"input": "terminated"}, "settle_s": 2, "duration_s": 10, "gates": ["no_clipping"]}
+    ],
+    "analysis": "chain_noise",
+    "success": "Hum is classified as present or absent without the microphone.",
+    "difficulty": 1
+  },
+  {
+    "id": "airborne_control",
+    "revision": "1",
+    "title": "Airborne-pickup control for a contact sensor",
+    "purpose": "Check whether the contact sensor's signal is real structural vibration or airborne sound picked up by the sensor.",
+    "min_tier": 2,
+    "required_sensors": ["vibration"],
+    "preconditions": ["A soft support (foam, folded cloth) to rest the sensor on next to its mounting point"],
+    "confounds": ["Different airborne exposure if the sensor is moved far away"],
+    "safety": [],
+    "steps": [
+      {"id": "mounted", "kind": "capture", "title": "Sensor mounted", "instruction": "Record with the contact sensor firmly mounted at its point.", "condition_label": "contact mounted", "settle_s": 2, "duration_s": 15, "gates": ["no_clipping", "signal_present"]},
+      {"id": "decouple", "kind": "instruction", "title": "Decouple the sensor", "instruction": "Remove the sensor and rest it on foam right next to the same point, so it no longer touches the structure."},
+      {"id": "decoupled", "kind": "capture", "title": "Sensor decoupled", "instruction": "Record with the sensor resting on foam (same place, not touching).", "condition_label": "contact decoupled", "mounting": "resting", "settle_s": 2, "duration_s": 15, "gates": ["no_clipping"]}
+    ],
+    "analysis": "airborne_control",
+    "success": "The structural share of the contact signal is known.",
+    "difficulty": 1
+  },
+  {
+    "id": "alias_check",
+    "revision": "1",
+    "title": "Aliasing check",
+    "purpose": "Check whether a tone is real or an alias of ultrasonic content, by recording at two sample rates.",
+    "min_tier": 1,
+    "required_sensors": ["any"],
+    "preconditions": ["The audio interface supports both 48 kHz and 44.1 kHz"],
+    "confounds": ["The source changing between the two captures"],
+    "safety": [],
+    "steps": [
+      {"id": "rate_a", "kind": "capture", "title": "Record at 48 kHz", "instruction": "Recording at 48 kHz.", "condition_label": "48 kHz", "sample_rate_hz": 48000, "settle_s": 1, "duration_s": 10, "gates": ["no_clipping"]},
+      {"id": "rate_b", "kind": "capture", "title": "Record at 44.1 kHz", "instruction": "Recording at 44.1 kHz.", "condition_label": "44.1 kHz", "sample_rate_hz": 44100, "settle_s": 1, "duration_s": 10, "gates": ["no_clipping"]}
+    ],
+    "analysis": "alias_check",
+    "success": "Tones that move with sample rate are identified as aliases.",
+    "difficulty": 1
+  },
+  {
+    "id": "fix_verification",
+    "revision": "1",
+    "title": "Fix verification",
+    "purpose": "Check, with repeated measurements, whether a remedy measurably improved the problem.",
+    "min_tier": 1,
+    "required_sensors": ["any"],
+    "preconditions": ["Sensors stay exactly in place", "Equipment runs in the same state before and after"],
+    "confounds": ["A remedy that changes the source and the path at the same time cannot be attributed to either", "Background noise changes"],
+    "safety": [],
+    "steps": [
+      {"id": "before", "kind": "capture", "title": "Before the fix", "instruction": "Record the problem before applying the fix.", "condition_label": "before fix", "settle_s": 3, "duration_s": 15, "repeats": 3, "gates": ["no_clipping", "signal_present"]},
+      {"id": "change", "kind": "intervention", "title": "Apply the fix", "instruction": "Apply the remedy. Describe it and tick what it changes (source, transmission path, receiver, measurement setup)."},
+      {"id": "after", "kind": "capture", "title": "After the fix", "instruction": "Record again with the fix in place.", "condition_label": "after fix", "settle_s": 5, "duration_s": 15, "repeats": 3, "gates": ["no_clipping", "comparable_to_first"]}
+    ],
+    "analysis": "intervention",
+    "success": "The improvement (or lack of one) is quantified with measured repeatability.",
+    "difficulty": 1
+  }
+]

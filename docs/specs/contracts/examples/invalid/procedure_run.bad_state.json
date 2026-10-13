@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "id": "run-0123456789ab",
+  "case_id": "case-0123456789ab",
+  "procedure_id": "equipment_state",
+  "revision": "1",
+  "params": {
+    "target": "pc"
+  },
+  "state": "done",
+  "step_index": 2,
+  "repeat_index": 1,
+  "captures": {
+    "on_1": [
+      "cap-a",
+      "cap-b"
+    ]
+  },
+  "interventions": {},
+  "started_utc": "2026-10-12T12:00:00Z",
+  "updated_utc": "2026-10-12T12:00:00Z",
+  "outcome": "",
+  "failure_reason": ""
+}

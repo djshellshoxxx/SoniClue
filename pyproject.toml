@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sonicclue"
+version = "0.1.0"
+description = "SonicClue: affordable sound and vibration cause investigation (Circuit Drift Labs)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary - license pending owner decision (see LICENSE-NOTICE.md)" }
+authors = [{ name = "Circuit Drift Labs" }]
+# Exact pins live in requirements.lock; ranges here describe API compatibility.
+dependencies = [
+  "numpy>=2.0,<3",
+  "scipy>=1.13,<2",
+  "pydantic>=2.7,<3",
+  "soundfile>=0.12",
+  "sounddevice>=0.4.6",
+  "matplotlib>=3.8",
+  "reportlab>=4.0",
+]
+
+[project.optional-dependencies]
+gui = ["PySide6>=6.6", "pyqtgraph>=0.13.4"]
+dev = ["pytest>=8", "hypothesis>=6", "jsonschema>=4.20", "pyinstaller>=6.5"]
+
+[project.scripts]
+sonicclue-cli = "sonicclue.cli.main:main"
+
+[project.gui-scripts]
+sonicclue = "sonicclue.gui.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sonicclue = ["procedures/definitions/*.json", "py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+  "gui: requires PySide6 (run with QT_QPA_PLATFORM=offscreen)",
+  "hardware: requires a physical audio device (never run in CI)",
+  "slow: long-running performance tests",
+]

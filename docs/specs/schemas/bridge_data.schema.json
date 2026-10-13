@@ -1,0 +1,57 @@
+{
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/bridge_data-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "axes": {
+      "maximum": 3,
+      "minimum": 1,
+      "title": "Axes",
+      "type": "integer"
+    },
+    "device_time_us": {
+      "maximum": 18446744073709551615,
+      "minimum": 0,
+      "title": "Device Time Us",
+      "type": "integer"
+    },
+    "sample_counter": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Sample Counter",
+      "type": "integer"
+    },
+    "samples": {
+      "items": {
+        "items": {
+          "type": "integer"
+        },
+        "type": "array"
+      },
+      "maxItems": 512,
+      "title": "Samples",
+      "type": "array"
+    },
+    "seq": {
+      "maximum": 65535,
+      "minimum": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "type": {
+      "const": "data",
+      "default": "data",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "seq",
+    "sample_counter",
+    "device_time_us",
+    "axes",
+    "samples"
+  ],
+  "title": "BridgeData",
+  "type": "object"
+}

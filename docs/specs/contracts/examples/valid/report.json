@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "id": "rep-0001",
+  "case_id": "case-0123456789ab",
+  "report_version": 1,
+  "created_utc": "2026-10-12T12:00:00Z",
+  "software_version": "0.1.0",
+  "ruleset_version": "1.0.0",
+  "redactions": [
+    "serials"
+  ],
+  "case_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "sections": [
+    {
+      "key": "summary",
+      "title": "Summary",
+      "statements": [
+        {
+          "cls": "inferred",
+          "text": "One explanation is supported.",
+          "refs": []
+        }
+      ],
+      "tables": [],
+      "figures": []
+    }
+  ]
+}

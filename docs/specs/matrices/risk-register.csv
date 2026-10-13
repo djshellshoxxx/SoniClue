@@ -1,0 +1,15 @@
+risk_id,description,kind,likelihood,impact,owner,mitigation,dependent_tasks,exit_criterion,status
+RISK-001,No audio hardware: devices unqualified,blocker,H,H,owner,run HQ tests,TASK-022..025,matrix QUALIFIED rows,OPEN
+RISK-002,Licence undecided,blocker,H,M,owner,decide licence,TASK-033,LICENSE committed,OPEN
+RISK-003,No code-signing certificate,blocker,H,M,owner,acquire certificate,TASK-032,signed artifacts,OPEN
+RISK-004,Python callback dropouts,risk,M,H,acquisition,bounded queue + gaps; rtmixer fallback,TASK-021,HQ-03 0 gaps,MONITORING
+RISK-005,Thresholds synthetic-only,risk,H,H,diagnostics,abstention; held-out protocol,TASK-040,evaluation reported,OPEN
+RISK-006,Windows AGC/enhancements,risk,M,H,product,AGC gating; exclusive mode; guidance,TASK-022,documented HQ-02,MITIGATED (software)
+RISK-007,Contact pickup misread as calibrated,risk,M,M,product,relative-only; airborne control,-,-,MITIGATED
+RISK-008,Long-capture memory,risk,M,M,dsp,block-wise; 600 s default,TASK-012,streamed analysis,PARTIALLY MITIGATED
+RISK-009,LGPL compliance,risk,L,H,release,onedir; notices; source offer,-,legal review,MITIGATED (pending review)
+RISK-010,Room modes mislead location surveys,risk,M,M,diagnostics,stated in texts,-,-,ACCEPTED
+RISK-011,Bridge board not selected,risk,H,L,hardware,protocol ready,TASK-026,board chosen,OPEN
+RISK-012,Competitive claims inaccurate,risk,M,M,product,no uniqueness claims,-,review recorded,OPEN
+RISK-013,Windows build verified only via CI,risk,M,M,release,CI smoke stage,TASK-020,CI green + HQ-09,SEE FINAL REPORT
+RISK-014,Spec and code by same session,risk,M,M,coordinator,independent review,TASK-042,review recorded,OPEN

@@ -1,0 +1,30 @@
+{
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/bridge_error-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "maximum": 255,
+      "minimum": 0,
+      "title": "Code",
+      "type": "integer"
+    },
+    "message": {
+      "maxLength": 64,
+      "title": "Message",
+      "type": "string"
+    },
+    "type": {
+      "const": "error",
+      "default": "error",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "title": "BridgeError",
+  "type": "object"
+}

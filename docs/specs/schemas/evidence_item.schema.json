@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "EvidenceKind": {
+      "enum": [
+        "tone",
+        "harmonic_family",
+        "mains_harmonics",
+        "state_effect",
+        "no_state_effect",
+        "residual_after_off",
+        "structural_coherence",
+        "airborne_control",
+        "resonance",
+        "transients",
+        "position_gradient",
+        "intervention_effect",
+        "confounded_intervention",
+        "not_comparable",
+        "measurement_quality",
+        "alias_test",
+        "chain_noise_test",
+        "user_observation"
+      ],
+      "title": "EvidenceKind",
+      "type": "string"
+    },
+    "StatementClass": {
+      "enum": [
+        "measured",
+        "calculated",
+        "inferred",
+        "user_asserted",
+        "unresolved"
+      ],
+      "title": "StatementClass",
+      "type": "string"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/evidence_item-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "channel_label": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Channel Label"
+    },
+    "freq_hz": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Freq Hz"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/EvidenceKind"
+    },
+    "params": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Params",
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "statement_class": {
+      "$ref": "#/$defs/StatementClass"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    },
+    "valid": {
+      "default": true,
+      "title": "Valid",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "statement_class",
+    "summary"
+  ],
+  "title": "EvidenceItem",
+  "type": "object"
+}

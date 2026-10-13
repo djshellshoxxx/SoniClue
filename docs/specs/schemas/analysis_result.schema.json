@@ -1,0 +1,786 @@
+{
+  "$defs": {
+    "AnalysisConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "band_type": {
+          "default": "third_octave",
+          "enum": [
+            "octave",
+            "third_octave"
+          ],
+          "title": "Band Type",
+          "type": "string"
+        },
+        "coherence_alpha": {
+          "default": 0.05,
+          "exclusiveMaximum": 0.5,
+          "exclusiveMinimum": 0,
+          "title": "Coherence Alpha",
+          "type": "number"
+        },
+        "event_frame_s": {
+          "default": 0.01,
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Event Frame S",
+          "type": "number"
+        },
+        "event_threshold_db": {
+          "default": 8.0,
+          "maximum": 60,
+          "minimum": 3,
+          "title": "Event Threshold Db",
+          "type": "number"
+        },
+        "fmax_hz": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fmax Hz"
+        },
+        "fmin_hz": {
+          "default": 10.0,
+          "minimum": 0,
+          "title": "Fmin Hz",
+          "type": "number"
+        },
+        "max_peaks": {
+          "default": 25,
+          "maximum": 500,
+          "minimum": 1,
+          "title": "Max Peaks",
+          "type": "integer"
+        },
+        "min_averages": {
+          "default": 8,
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Min Averages",
+          "type": "integer"
+        },
+        "min_nperseg": {
+          "default": 256,
+          "minimum": 16,
+          "title": "Min Nperseg",
+          "type": "integer"
+        },
+        "overlap": {
+          "default": 0.5,
+          "exclusiveMaximum": 0.95,
+          "minimum": 0,
+          "title": "Overlap",
+          "type": "number"
+        },
+        "resolution_hz": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "title": "Resolution Hz",
+          "type": "number"
+        },
+        "spectrogram_nperseg": {
+          "default": 4096,
+          "minimum": 64,
+          "title": "Spectrogram Nperseg",
+          "type": "integer"
+        },
+        "store_arrays": {
+          "default": true,
+          "title": "Store Arrays",
+          "type": "boolean"
+        },
+        "tone_prominence_db": {
+          "default": 10.0,
+          "maximum": 60,
+          "minimum": 3,
+          "title": "Tone Prominence Db",
+          "type": "number"
+        },
+        "window": {
+          "default": "hann",
+          "enum": [
+            "hann",
+            "hamming",
+            "blackmanharris",
+            "flattop",
+            "boxcar"
+          ],
+          "title": "Window",
+          "type": "string"
+        }
+      },
+      "title": "AnalysisConfig",
+      "type": "object"
+    },
+    "BandLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "center_hz": {
+          "title": "Center Hz",
+          "type": "number"
+        },
+        "high_hz": {
+          "title": "High Hz",
+          "type": "number"
+        },
+        "level_db": {
+          "title": "Level Db",
+          "type": "number"
+        },
+        "low_hz": {
+          "title": "Low Hz",
+          "type": "number"
+        },
+        "power": {
+          "minimum": 0,
+          "title": "Power",
+          "type": "number"
+        },
+        "valid": {
+          "title": "Valid",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "center_hz",
+        "low_hz",
+        "high_hz",
+        "level_db",
+        "power",
+        "valid"
+      ],
+      "title": "BandLevel",
+      "type": "object"
+    },
+    "ChannelAnalysis": {
+      "additionalProperties": false,
+      "properties": {
+        "bands": {
+          "items": {
+            "$ref": "#/$defs/BandLevel"
+          },
+          "title": "Bands",
+          "type": "array"
+        },
+        "calibrated": {
+          "title": "Calibrated",
+          "type": "boolean"
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "integer"
+        },
+        "enbw_hz": {
+          "title": "Enbw Hz",
+          "type": "number"
+        },
+        "excluded_frames": {
+          "minimum": 0,
+          "title": "Excluded Frames",
+          "type": "integer"
+        },
+        "families": {
+          "items": {
+            "$ref": "#/$defs/HarmonicFamily"
+          },
+          "title": "Families",
+          "type": "array"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "levels": {
+          "$ref": "#/$defs/LevelSummary"
+        },
+        "n_averages": {
+          "title": "N Averages",
+          "type": "integer"
+        },
+        "noise_floor_db": {
+          "title": "Noise Floor Db",
+          "type": "number"
+        },
+        "nperseg": {
+          "title": "Nperseg",
+          "type": "integer"
+        },
+        "peaks": {
+          "items": {
+            "$ref": "#/$defs/TonalPeak"
+          },
+          "title": "Peaks",
+          "type": "array"
+        },
+        "quality": {
+          "items": {
+            "$ref": "#/$defs/QualityFlag"
+          },
+          "title": "Quality",
+          "type": "array"
+        },
+        "quantity": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "resolution_hz": {
+          "title": "Resolution Hz",
+          "type": "number"
+        },
+        "transients": {
+          "$ref": "#/$defs/TransientSummary"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "label",
+        "quantity",
+        "unit",
+        "calibrated",
+        "levels",
+        "noise_floor_db",
+        "peaks",
+        "families",
+        "transients",
+        "bands",
+        "n_averages",
+        "nperseg",
+        "resolution_hz",
+        "enbw_hz",
+        "excluded_frames"
+      ],
+      "title": "ChannelAnalysis",
+      "type": "object"
+    },
+    "CoherentPeak": {
+      "additionalProperties": false,
+      "properties": {
+        "coherence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Coherence",
+          "type": "number"
+        },
+        "freq_hz": {
+          "title": "Freq Hz",
+          "type": "number"
+        },
+        "phase_rad": {
+          "title": "Phase Rad",
+          "type": "number"
+        },
+        "transfer_db": {
+          "title": "Transfer Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "freq_hz",
+        "coherence",
+        "transfer_db",
+        "phase_rad"
+      ],
+      "title": "CoherentPeak",
+      "type": "object"
+    },
+    "CrossChannelResult": {
+      "additionalProperties": false,
+      "properties": {
+        "ch_a": {
+          "title": "Ch A",
+          "type": "integer"
+        },
+        "ch_b": {
+          "title": "Ch B",
+          "type": "integer"
+        },
+        "coherence_threshold": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Coherence Threshold",
+          "type": "number"
+        },
+        "coherent_peaks": {
+          "items": {
+            "$ref": "#/$defs/CoherentPeak"
+          },
+          "title": "Coherent Peaks",
+          "type": "array"
+        },
+        "delay_ambiguity_ratio": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Delay Ambiguity Ratio",
+          "type": "number"
+        },
+        "delay_s": {
+          "$ref": "#/$defs/TaggedValue"
+        },
+        "eligible": {
+          "title": "Eligible",
+          "type": "boolean"
+        },
+        "max_valid_freq_hz": {
+          "minimum": 0,
+          "title": "Max Valid Freq Hz",
+          "type": "number"
+        },
+        "n_averages": {
+          "title": "N Averages",
+          "type": "integer"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "sync_basis": {
+          "enum": [
+            "shared_clock",
+            "aligned",
+            "none"
+          ],
+          "title": "Sync Basis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ch_a",
+        "ch_b",
+        "sync_basis",
+        "eligible",
+        "reason",
+        "max_valid_freq_hz",
+        "n_averages",
+        "coherence_threshold",
+        "delay_s",
+        "delay_ambiguity_ratio"
+      ],
+      "title": "CrossChannelResult",
+      "type": "object"
+    },
+    "HarmonicFamily": {
+      "additionalProperties": false,
+      "properties": {
+        "f0_hz": {
+          "exclusiveMinimum": 0,
+          "title": "F0 Hz",
+          "type": "number"
+        },
+        "mains": {
+          "default": "none",
+          "enum": [
+            "50",
+            "60",
+            "none"
+          ],
+          "title": "Mains",
+          "type": "string"
+        },
+        "orders": {
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 2,
+          "title": "Orders",
+          "type": "array"
+        }
+      },
+      "required": [
+        "f0_hz",
+        "orders"
+      ],
+      "title": "HarmonicFamily",
+      "type": "object"
+    },
+    "LevelSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "calibrated": {
+          "title": "Calibrated",
+          "type": "boolean"
+        },
+        "crest_db": {
+          "$ref": "#/$defs/TaggedValue"
+        },
+        "dc_offset_fs": {
+          "title": "Dc Offset Fs",
+          "type": "number"
+        },
+        "level_db": {
+          "title": "Level Db",
+          "type": "number"
+        },
+        "level_ref": {
+          "title": "Level Ref",
+          "type": "string"
+        },
+        "peak": {
+          "minimum": 0,
+          "title": "Peak",
+          "type": "number"
+        },
+        "rms": {
+          "minimum": 0,
+          "title": "Rms",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rms",
+        "peak",
+        "crest_db",
+        "level_db",
+        "level_ref",
+        "unit",
+        "calibrated",
+        "dc_offset_fs"
+      ],
+      "title": "LevelSummary",
+      "type": "object"
+    },
+    "QualityCode": {
+      "enum": [
+        "clipping",
+        "near_clipping",
+        "dropout_gap",
+        "input_overflow",
+        "silence",
+        "low_signal",
+        "dc_offset",
+        "nonfinite",
+        "short_capture",
+        "insufficient_averages",
+        "agc_active",
+        "agc_unknown",
+        "cal_missing",
+        "cal_gain_mismatch",
+        "cal_expired",
+        "cal_out_of_band",
+        "sync_unverified",
+        "sync_ambiguous",
+        "sync_insufficient",
+        "clock_reset",
+        "mismatched_rate",
+        "nonuniform_timestamps",
+        "recovered_capture",
+        "partial_capture",
+        "device_disconnected",
+        "simulated_data",
+        "alias_risk",
+        "tier_limited"
+      ],
+      "title": "QualityCode",
+      "type": "string"
+    },
+    "QualityFlag": {
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Channel"
+        },
+        "code": {
+          "$ref": "#/$defs/QualityCode"
+        },
+        "end_frame": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Frame"
+        },
+        "message": {
+          "maxLength": 500,
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "start_frame": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start Frame"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "QualityFlag",
+      "type": "object"
+    },
+    "Quantity": {
+      "enum": [
+        "sound_pressure",
+        "acceleration",
+        "velocity",
+        "voltage",
+        "relative"
+      ],
+      "title": "Quantity",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "info",
+        "warning",
+        "invalid"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "TaggedValue": {
+      "additionalProperties": false,
+      "description": "A measured value that may be unavailable (not measured or not applicable)\nor invalid (measured, then rejected, with a reason).",
+      "properties": {
+        "reason": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "status": {
+          "enum": [
+            "valid",
+            "unavailable",
+            "invalid"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "TaggedValue",
+      "type": "object"
+    },
+    "TonalPeak": {
+      "additionalProperties": false,
+      "properties": {
+        "cal_in_band": {
+          "default": true,
+          "title": "Cal In Band",
+          "type": "boolean"
+        },
+        "freq_hz": {
+          "exclusiveMinimum": 0,
+          "title": "Freq Hz",
+          "type": "number"
+        },
+        "level_db": {
+          "title": "Level Db",
+          "type": "number"
+        },
+        "prominence_db": {
+          "title": "Prominence Db",
+          "type": "number"
+        },
+        "q": {
+          "$ref": "#/$defs/TaggedValue"
+        },
+        "rms": {
+          "minimum": 0,
+          "title": "Rms",
+          "type": "number"
+        }
+      },
+      "required": [
+        "freq_hz",
+        "level_db",
+        "prominence_db",
+        "rms",
+        "q"
+      ],
+      "title": "TonalPeak",
+      "type": "object"
+    },
+    "TransientSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "event_count": {
+          "minimum": 0,
+          "title": "Event Count",
+          "type": "integer"
+        },
+        "event_times_s": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2000,
+          "title": "Event Times S",
+          "type": "array"
+        },
+        "events_per_min": {
+          "minimum": 0,
+          "title": "Events Per Min",
+          "type": "number"
+        },
+        "max_excess_db": {
+          "title": "Max Excess Db",
+          "type": "number"
+        },
+        "median_interval_s": {
+          "$ref": "#/$defs/TaggedValue"
+        },
+        "periodic": {
+          "title": "Periodic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "event_count",
+        "events_per_min",
+        "median_interval_s",
+        "periodic",
+        "max_excess_db"
+      ],
+      "title": "TransientSummary",
+      "type": "object"
+    }
+  },
+  "$id": "https://circuitdriftlabs.example/sonicclue/schemas/analysis_result-1.0.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "algorithm_version": {
+      "title": "Algorithm Version",
+      "type": "string"
+    },
+    "arrays_file": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Arrays File"
+    },
+    "capture_id": {
+      "title": "Capture Id",
+      "type": "string"
+    },
+    "channels": {
+      "items": {
+        "$ref": "#/$defs/ChannelAnalysis"
+      },
+      "title": "Channels",
+      "type": "array"
+    },
+    "config": {
+      "$ref": "#/$defs/AnalysisConfig"
+    },
+    "created_utc": {
+      "format": "date-time",
+      "title": "Created Utc",
+      "type": "string"
+    },
+    "cross": {
+      "items": {
+        "$ref": "#/$defs/CrossChannelResult"
+      },
+      "title": "Cross",
+      "type": "array"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "quality": {
+      "items": {
+        "$ref": "#/$defs/QualityFlag"
+      },
+      "title": "Quality",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "software_version": {
+      "title": "Software Version",
+      "type": "string"
+    },
+    "tier": {
+      "maximum": 5,
+      "minimum": 1,
+      "title": "Tier",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "capture_id",
+    "created_utc",
+    "config",
+    "algorithm_version",
+    "tier",
+    "channels",
+    "software_version"
+  ],
+  "title": "AnalysisResult",
+  "type": "object"
+}

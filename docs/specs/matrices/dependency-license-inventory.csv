@@ -1,0 +1,19 @@
+dep_id,name,exact_version,purpose,license,license_compatible,bundled,source_url,justification_ref
+DEP-001,numpy,2.4.6,arrays and FFT,BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0,yes,yes,https://numpy.org,ADR-0003
+DEP-002,scipy,1.17.1,Welch/CSD/filters/resampling/statistics,BSD-3-Clause,yes,yes,https://scipy.org,ADR-0003
+DEP-003,pydantic,2.14.1,canonical contracts and validation; JSON Schema generation,MIT,yes,yes,https://docs.pydantic.dev,ADR-0014
+DEP-004,pydantic-core,2.50.1,pydantic engine (Rust extension),MIT,yes,yes,https://github.com/pydantic/pydantic-core,ADR-0014
+DEP-005,annotated-types / typing-extensions / typing-inspection,0.8.0 / 4.16.0 / 0.4.4,pydantic dependencies,MIT / PSF-2.0 / MIT,yes,yes,PyPI,ADR-0014
+DEP-006,soundfile (+ bundled libsndfile),0.14.0,WAV/FLAC read-write,BSD-3-Clause (libsndfile LGPL-2.1 dynamically linked),yes (LGPL: shipped as replaceable shared library + notice),yes,https://github.com/bastibe/python-soundfile,ADR-0003
+DEP-007,sounddevice (+ bundled PortAudio),0.5.6,audio device I/O,MIT (PortAudio MIT-style),yes,yes,https://python-sounddevice.readthedocs.io,ADR-0003
+DEP-008,cffi / pycparser,2.1.1 / 3.0,soundfile/sounddevice FFI,MIT-0 / BSD-3-Clause,yes,yes,PyPI,ADR-0003
+DEP-009,matplotlib (+ contourpy cycler fonttools kiwisolver pillow pyparsing python-dateutil six packaging),3.11.1,headless report figures,Matplotlib licence (PSF-style); deps BSD/MIT/Apache-2.0/MIT-CMU,yes,yes,https://matplotlib.org,ADR-0019
+DEP-010,reportlab (+ charset-normalizer),5.0.1,PDF reports,BSD-3-Clause / MIT,yes,yes,https://www.reportlab.com,ADR-0019
+DEP-011,PySide6 / shiboken6 (Qt 6.12),6.12.0,desktop GUI,LGPL-3.0-only (chosen option of LGPL/GPL),yes (dynamic linking; Qt libraries replaceable in onedir build; source/notice provided),yes,https://doc.qt.io/qtforpython,ADR-0012
+DEP-012,pyqtgraph,0.14.0,fast interactive plots,MIT,yes,yes,https://www.pyqtgraph.org,ADR-0012
+DEP-013,Python runtime (CPython),3.11+,runtime,PSF-2.0,yes,yes,https://python.org,ADR-0013
+DEP-014,pyinstaller,6.22.3,build-time packaging,GPL-2.0 with bootloader exception (output may be distributed under any licence),yes (build tool only),bootloader only,https://pyinstaller.org,ADR-0009
+DEP-015,pytest,9.1.1,tests (dev only),MIT,yes,no,https://pytest.org,-
+DEP-016,hypothesis,6.169.0,tests (dev only),MPL-2.0,yes,no,https://hypothesis.works,-
+DEP-017,jsonschema,4.26.0,independent schema validation in tests (dev only),MIT,yes,no,https://python-jsonschema.readthedocs.io,-
+DEP-018,ruff,latest,lint (dev only),MIT,yes,no,https://docs.astral.sh/ruff,-

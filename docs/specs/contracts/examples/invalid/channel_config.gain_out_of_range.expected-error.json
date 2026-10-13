@@ -1,0 +1,5 @@
+{
+  "contract": "channel_config",
+  "keyword": "anyOf",
+  "path": "/input_gain_db"
+}

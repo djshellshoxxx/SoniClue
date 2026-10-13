@@ -1,0 +1,101 @@
+req_id,status,spec_section,modules,contracts,tests,validation_ids,verification
+REQ-PRN-001,CONFIRMED,09 §3,diagnostics.engine,CON-013,test_diagnostics_adversarial.py,VAL-DX-01,TESTED
+REQ-PRN-002,CONFIRMED,09 §4,diagnostics.engine,CON-013,test_baseline_alone_is_inconclusive_*;test_adv004_*;test_clipped_capture_*,VAL-DX-02,TESTED
+REQ-PRN-003,CONFIRMED,09 §1 §8,diagnostics.engine;analysis.pipeline,CON-012,test_adv002/003/009,VAL-DX-03,TESTED
+REQ-PRN-004,CONFIRMED,15 §1,all,-,code review (only socket.gethostname); packaging smoke offline,VAL-SEC-01,IMPLEMENTED
+REQ-PRN-005,CONFIRMED,08 §5;09 §6,dsp.stats;compare;diagnostics,CON-017,test_compare_levels_*,VAL-CMP-02,TESTED
+REQ-PRN-006,CONFIRMED,05 §1;14 §1,app.service;reporting,CON-002;CON-014,test_reports_all_formats_* (SIMULATED tag),VAL-REP-02,TESTED
+REQ-WF-001,CONFIRMED,12 §2,gui.screens_case;app,CON-001,test_gui.py;test_workflows.py::test_cli_end_to_end,VAL-UI-01,TESTED
+REQ-WF-002,CONFIRMED,12 §2;06 §1,gui.screens_setup;app,CON-003,test_gui.py::test_capture_analysis_guided_and_report_flow,VAL-UI-01,TESTED
+REQ-WF-003,CONFIRMED,10,procedures;app,CON-010;CON-011,test_gates_reject_clipping_then_accept_and_persist,VAL-PROC-01,TESTED
+REQ-WF-004,CONFIRMED,05 §5;08 §4,dsp.levels;acquisition.session,CON-009,test_edge_screening_*;test_clipping_flagged_during_capture,VAL-DSP-10,TESTED
+REQ-WF-005,CONFIRMED,08,analysis.pipeline;dsp.*,CON-007,test_dsp_numerics.py,VAL-DSP-*,TESTED
+REQ-WF-006,CONFIRMED,09 §3,diagnostics.engine,CON-013,test_diagnostics_adversarial.py,VAL-DX-01,TESTED
+REQ-WF-007,CONFIRMED,09 §7,diagnostics.next_tests,NextTest,test_baseline_alone_is_inconclusive_* (next test = equipment_state),VAL-DX-04,TESTED
+REQ-WF-008,CONFIRMED,10 §2,procedures;app;gui.screens_dx,CON-011,test_state_machine_transitions_*;test_gates_*(reopen);test_gui.py,VAL-PROC-02,TESTED
+REQ-WF-009,CONFIRMED,09 §5;08 §6,compare,CON-017,test_adv004/005/008;test_on_off_supports_*,VAL-CMP-01,TESTED
+REQ-WF-010,CONFIRMED,09 §4,diagnostics;storage,CON-013,test_snapshot_is_deterministic; history screen (GUI),VAL-DX-05,TESTED
+REQ-WF-011,CONFIRMED,09 §1,diagnostics;gui.screens_dx,CON-013,test_adv003 (explanation);test_gui.py,VAL-DX-01,TESTED
+REQ-WF-012,CONFIRMED,10 §1,procedures(fix_verification);compare,CON-017,test_adv007/008 (intervention paths),VAL-PROC-03,TESTED
+REQ-WF-013,CONFIRMED,14,reporting,CON-014,test_reports_all_formats_classes_and_redaction,VAL-REP-01,TESTED
+REQ-WF-014,CONFIRMED,13 §3,storage,CON-002,test_capture_roundtrip_immutable_and_lossless,VAL-STO-01,TESTED
+REQ-ACQ-001,CONFIRMED,05 §1,acquisition.backends,-,test_workflows (simulated devices); PortAudio on hardware UNEXECUTED,HQ-02,IMPLEMENTED (hardware UNQUALIFIED)
+REQ-ACQ-002,CONFIRMED,05 §1,acquisition.session,-,test_exact_duration_and_double_start_stop (simulated),HQ-03,TESTED (simulated)
+REQ-ACQ-003,SELECTED_DEFAULT,05 §1,acquisition.backends,DeviceInfo,none (needs Windows hardware),HQ-02,UNEXECUTED
+REQ-ACQ-004,CONFIRMED,05 §3,acquisition.session,-,test_queue_overflow_becomes_zero_filled_gap,VAL-ACQ-01,TESTED
+REQ-ACQ-005,CONFIRMED,05 §3,acquisition.session,Gap,test_queue_overflow_becomes_zero_filled_gap,VAL-ACQ-01,TESTED
+REQ-ACQ-006,CONFIRMED,05 §3,acquisition.backends/session,Gap,code path (status flag); hardware UNEXECUTED,HQ-03,IMPLEMENTED
+REQ-ACQ-007,CONFIRMED,05 §2,acquisition.session;app,CON-002,test_device_disconnect_keeps_partial_data,VAL-ACQ-02,TESTED
+REQ-ACQ-008,CONFIRMED,05 §2,acquisition.session;app,-,test_cancel_reports_cancelled;test_exact_duration_and_double_start_stop,VAL-ACQ-03,TESTED
+REQ-ACQ-009,CONFIRMED,05 §4;13 §4,storage.store.recover,CON-002,test_crash_recovery_from_journal,VAL-STO-02,TESTED
+REQ-ACQ-010,CONFIRMED,05 §1,storage.writer,-,test_capture_roundtrip_immutable_and_lossless (bit-exact),VAL-STO-01,TESTED
+REQ-ACQ-011,CONFIRMED,12 §2,gui.screens_measure;acquisition.session.snapshot,-,test_gui.py (live capture),VAL-UI-01,TESTED
+REQ-ACQ-012,CONFIRMED,05 §6,acquisition.importer;app,-,test_import_wav_preserves_original_and_values,VAL-ACQ-04,TESTED
+REQ-ACQ-013,BLOCKED,05 §1,-,-,-,DEC-003a,NOT_STARTED
+REQ-ACQ-014,SELECTED_DEFAULT (future),05 §7,-,-,-,-,NOT_STARTED (offline alignment provided)
+REQ-ACQ-015,CONFIRMED,05 §1,acquisition.backends.SimWorld;app.demo,-,test_demo_diagnosis_matches_simulated_ground_truth,VAL-E2E-01,TESTED
+REQ-SEN-001,CONFIRMED,06 §1,domain.model,CON-004,contract examples,VAL-CON-01,TESTED
+REQ-SEN-002,CONFIRMED,06 §2,domain.model;sensors.calibration,CON-004;CON-005,test_contact_pickup_cannot_be_calibrated,VAL-CAL-03,TESTED
+REQ-SEN-003,CONFIRMED,06 §4,sensors.capabilities,CON-007 tier,test_capability_tiers,VAL-CAL-04,TESTED
+REQ-SEN-004,CONFIRMED (protocol) / BLOCKED (hardware),06 §6,sensors.bridge;acquisition.importer,CON-016,test_bridge_*,VAL-BR-01,TESTED (protocol)
+REQ-CAL-001,CONFIRMED,06 §2,sensors.calibration;app;gui,CON-005,test_calibrate_from_94db_recovers_sensitivity;test_calibration_rejections,VAL-CAL-01,TESTED (synthetic); HQ-04 UNEXECUTED
+REQ-CAL-002,CONFIRMED,06 §2,sensors.calibration;app,CON-005,test_fr_file_direction_response_is_negated,VAL-CAL-02,TESTED
+REQ-CAL-003,CONFIRMED,06 §2,sensors.calibration;analysis,CON-005,test_inv006_*;test_calibration_expiry_and_sensor_mismatch;test_fr_correction_*,VAL-CAL-02,TESTED
+REQ-CAL-004,CONFIRMED,06 §2,sensors.calibration;reporting,CON-005,test_calibrate_from_94db_* (uncertainty),VAL-CAL-01,TESTED
+REQ-SYN-001,CONFIRMED,07 §1,analysis.pipeline,CON-007,test_inv005_*,VAL-SYN-01,TESTED
+REQ-SYN-002,CONFIRMED,07 §3,sync;app;cli;gui,CON-008,test_sync_*;test_align_two_independent_devices_via_import,VAL-SYN-02,TESTED (synthetic); HQ-05 UNEXECUTED
+REQ-SYN-003,CONFIRMED,07 §4,sync;analysis,CON-008,test_sync_periodic_signal_is_ambiguous;test_sync_clock_reset_detected;test_adv009_*,VAL-SYN-03,TESTED
+REQ-DSP-001,CONFIRMED,08 §3 INV-003,dsp.spectral,-,test_inv003_*,VAL-DSP-03,TESTED
+REQ-DSP-002,CONFIRMED,08 INV-010,dsp.spectral,-,test_inv010_gap_exclusion_vs_naive,VAL-DSP-10,TESTED
+REQ-DSP-003,CONFIRMED,08 §2,dsp.tonal,-,test_inv004_tone_power_*;test_resonance_q_*,VAL-DSP-04,TESTED
+REQ-DSP-004,CONFIRMED,08 §2,dsp.tonal,-,test_harmonic_family_and_mains;test_non_mains_family_*,VAL-DSP-05,TESTED
+REQ-DSP-005,CONFIRMED,08 §2,dsp.transient,-,adversarial/demo transients,VAL-DSP-06,TESTED
+REQ-DSP-006,CONFIRMED,08 INV-005 INV-011,dsp.cross,-,test_inv005_*;test_inv011_*;test_adv009_*,VAL-DSP-05,TESTED
+REQ-DSP-007,CONFIRMED,08 INV-008,dsp.spectral,-,test_band_centres_iec_base10;test_inv008_*,VAL-DSP-08,TESTED
+REQ-DSP-008,CONFIRMED,08 §2,dsp.spectral;dsp.transient,-,test_spectrogram_matches_scipy_reference;test_envelope_spectrum_finds_modulation_rate,VAL-DSP-12,TESTED
+REQ-DSP-009,CONFIRMED,03 §2,dsp,-,test_reusable_dsp_has_no_heavy_imports,VAL-ARCH-01,TESTED
+REQ-DSP-010,CONFIRMED,08 §2,dsp.cross,-,none dedicated,-,IMPLEMENTED
+REQ-DSP-011,BLOCKED,02 §3,-,-,-,DEC-011,NOT_STARTED
+REQ-CMP-001,CONFIRMED,09 §5,compare.comparability,CON-017,test_adv004/005/008;test_comparable_gate_rejects_moved_sensor,VAL-CMP-01,TESTED
+REQ-CMP-002,CONFIRMED,08 §6,dsp.stats;compare,CON-017,test_compare_levels_measured_and_min_effect,VAL-CMP-02,TESTED
+REQ-CMP-003,CONFIRMED,08 §6,compare,CON-017,test_on_off_supports_* (tone deltas),VAL-CMP-03,TESTED
+REQ-DX-001,CONFIRMED,09 §1,diagnostics,CON-013,test_snapshot_is_deterministic,VAL-DX-05,TESTED
+REQ-DX-002,CONFIRMED,09 §1,diagnostics;reporting,CON-013,test_adv001 (no %),VAL-DX-03,TESTED
+REQ-DX-003,CONFIRMED,09 §3,diagnostics (rules table),-,spec table + adversarial suite,VAL-DX-01,TESTED
+REQ-DX-004,CONFIRMED,09 §8,diagnostics,-,test_diagnostics_adversarial.py,VAL-DX-01..10,TESTED
+REQ-DX-005,CONFIRMED,09 §7,diagnostics.next_tests,NextTest,test_baseline_alone_* ; demo next tests,VAL-DX-04,TESTED
+REQ-DX-006,CONFIRMED,09 §1,diagnostics;reporting,-,code review (templates only),-,IMPLEMENTED
+REQ-PROC-001,CONFIRMED,10 §1,procedures,CON-010,test_library_valid_and_placeholders_resolve,VAL-PROC-01,TESTED
+REQ-PROC-002,CONFIRMED,10 §1,procedures,CON-010,same + schema,VAL-PROC-01,TESTED
+REQ-PROC-003,CONFIRMED,10 §3,app;procedures,CON-011,test_gates_reject_clipping_then_accept_and_persist,VAL-PROC-02,TESTED
+REQ-STIM-001,CONFIRMED,11 §2,stimulus,-,test_output_never_plays_without_arming_and_confirmation;test_arm_expiry_*,VAL-STIM-01,TESTED (simulated)
+REQ-STIM-002,CONFIRMED,11 §2,stimulus,-,test_level_and_duration_limits_and_one_shot;test_generated_signals_have_fades_*,VAL-STIM-02,TESTED (simulated)
+REQ-STIM-003,CONFIRMED,11 §2,stimulus,-,test_level_and_duration_limits_and_one_shot (one-shot),VAL-STIM-02,TESTED; HQ-08 UNEXECUTED
+REQ-STIM-004,CONFIRMED,11 §2,stimulus,-,test_arm_expiry_feedback_guard_and_stop,VAL-STIM-03,TESTED
+REQ-STIM-005,CONFIRMED,11 §2,stimulus;app,-,test_audition_does_not_modify_data,VAL-STIM-04,TESTED
+REQ-UI-001,CONFIRMED,12 §2,gui,-,test_all_screens_construct_and_switch,VAL-UI-01,TESTED (offscreen)
+REQ-UI-002,CONFIRMED,12 §2,gui,-,test_all_screens_construct_and_switch (mode switch),VAL-UI-01,TESTED
+REQ-UI-003,CONFIRMED,12 §1,gui.common.GuiContext.run,-,test_gui.py (async flows),VAL-UI-02,TESTED
+REQ-UI-004,CONFIRMED,12 §1,gui,-,code review (accessible names; table tabs),-,IMPLEMENTED (no screen-reader test)
+REQ-UI-005,CONFIRMED,12 §4,cli,-,test_cli_end_to_end,VAL-UI-03,TESTED
+REQ-UI-006,CONFIRMED,12 §1,gui.common,-,screenshots (outputs),-,IMPLEMENTED
+REQ-STO-001,CONFIRMED,13,storage,CON-002,test_storage.py,VAL-STO-*,TESTED
+REQ-STO-002,CONFIRMED,13 §4,storage,-,test_create_open_lock_and_reopen;test_stale_lock_reclaimed;test_crash_recovery_*,VAL-STO-02,TESTED
+REQ-STO-003,CONFIRMED,13 §3,storage;analysis,CON-007,contract (required capture_id/algorithm_version),VAL-CON-01,TESTED
+REQ-STO-004,CONFIRMED,13 §6,storage.migrations,-,test_newer_store_version_rejected_and_migration_backup,VAL-STO-03,TESTED
+REQ-STO-005,CONFIRMED,13 §7,storage.archive,CON-015,test_archive_*,VAL-STO-04,TESTED
+REQ-STO-006,CONFIRMED,13 §5,storage.store.verify,-,test_verify_detects_tampering_and_missing;test_damaged_document_detected,VAL-STO-05,TESTED
+REQ-REP-001,CONFIRMED,14 §1,reporting,CON-014,test_reports_all_formats_classes_and_redaction,VAL-REP-01,TESTED
+REQ-REP-002,CONFIRMED,14 §1,reporting,CON-014,same (section keys),VAL-REP-01,TESTED
+REQ-REP-003,CONFIRMED,14 §3 §4,reporting,CON-014,same (redaction; report_version),VAL-REP-03,TESTED
+REQ-SEC-001,CONFIRMED,15 §1,all,-,code review,VAL-SEC-01,IMPLEMENTED
+REQ-SEC-002,CONFIRMED,15 §4,tools.gen_notices;packaging,-,build.py output,VAL-PKG-02,TESTED (build)
+REQ-SEC-003,CONFIRMED,19 §2,packaging.build,-,build.py output,VAL-PKG-01,TESTED (build)
+REQ-PERF-001,VALIDATION_REQUIRED,16 §2,dsp;analysis,-,benchmark analysis_60s_2ch (1.9 s on build VM),VAL-PERF-01,MEASURED (build VM only)
+REQ-PERF-002,VALIDATION_REQUIRED,16 §2,acquisition,-,writer throughput 267 MB/s (VM); HQ-03 UNEXECUTED,HQ-03,UNEXECUTED (hardware)
+REQ-PERF-003,CONFIRMED,16 §2,gui,-,benchmark gui_idle_rss_MB 278 MB,VAL-PERF-02,MEASURED (build VM)
+REQ-PKG-001,CONFIRMED,19 §1,packaging;.github/workflows,-,CI windows job (see final report),VAL-PKG-01,see final report
+REQ-PKG-002,CONFIRMED,19 §1,packaging,-,build.py smoke on Linux,VAL-PKG-01,TESTED (build VM)
+REQ-PKG-003,BLOCKED,19 §1,-,-,-,DEC-009,NOT_STARTED
+REQ-QA-001,CONFIRMED,18,qualification;gui;cli,-,loopback code path; HQ-02 UNEXECUTED,HQ-02,IMPLEMENTED
+REQ-QA-002,CONFIRMED,18 §2,qualification.selftest,-,cli selftest in tests and build smoke,HQ-01,TESTED

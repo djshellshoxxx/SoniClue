@@ -1,0 +1,9 @@
+os,os_version,arch,device,driver_or_runtime,build_id,tests_executed,result,date,status
+Linux,Ubuntu 24.04 (build VM; no audio devices),x86_64,SonicClue simulator,PortAudio 19.6 present (no devices),0.1.0+local,unit/integration/GUI offscreen/package smoke,pass,2026-10-12,SOFTWARE ONLY (no device qualified)
+Windows,11 x64,x86_64,any audio interface,WASAPI/MME via bundled PortAudio,-,none,-,-,UNQUALIFIED
+Windows,10 22H2,x86_64,any audio interface,WASAPI/MME via bundled PortAudio,-,none,-,-,UNQUALIFIED
+Linux,Ubuntu 22.04/24.04,x86_64,any audio interface,ALSA/PipeWire-ALSA via PortAudio,-,none,-,-,UNQUALIFIED
+any,any,any,USB measurement microphone,-,-,none,-,-,UNQUALIFIED
+any,any,any,piezo contact pickup,-,-,none,-,-,UNQUALIFIED
+any,any,any,IEPE accelerometer + conditioner,-,-,none,-,-,UNQUALIFIED
+any,any,any,MEMS sensor bridge,protocol v1,-,protocol tests only,pass (software),2026-10-12,UNQUALIFIED (hardware BLOCKED)
