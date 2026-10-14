@@ -56,7 +56,7 @@ def export_case(store: CaseStore, out_path: Path, include_derived: bool = True) 
         files: list[tuple[str, Path]] = [("case.db", snap)]
         for sub in ("captures", "reports") + (("derived",) if include_derived else ()):
             for p in sorted((store.path / sub).rglob("*")):
-                if p.is_file() and not p.name.endswith((".part", ".tmp")) and not p.name.startswith("."):
+                if p.is_file() and not p.name.endswith((".part", ".tmp")) and not any(part.startswith(".") for part in p.relative_to(store.path).parts):
                     files.append((p.relative_to(store.path).as_posix(), p))
         entries = [ArchiveEntry(path=a, size=p.stat().st_size, sha256=sha256_file(p)) for a, p in files]
         man = ArchiveManifest(case_id=store.case.id, created_utc=utcnow(), software_version=__version__, entries=entries)

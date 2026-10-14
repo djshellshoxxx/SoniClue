@@ -156,6 +156,9 @@ class CaseStore:
                         raise SchemaVersionError("case needs migration; open read-write to migrate")
                     self.close_connections()
                     migrate(self.path / "case.db", ver)
+            if not readonly:  # spools orphaned by a crashed analysis
+                for d in (self.path / "derived").glob(".sc-spool-*"):
+                    shutil.rmtree(d, ignore_errors=True)
             self.recovered = [] if readonly else self.recover()
         except BaseException:
             self.close()
@@ -237,12 +240,13 @@ class CaseStore:
             raise StorageError("case opened read-only", code="SC_READONLY")
         with self._wlock:
             c = self._conn()
+            c.execute("BEGIN IMMEDIATE")
             try:
-                c.execute("BEGIN IMMEDIATE")
                 yield c
                 c.execute("COMMIT")
             except BaseException:
-                c.execute("ROLLBACK")
+                if c.in_transaction:
+                    c.execute("ROLLBACK")
                 raise
 
     # ---------------- documents ----------------

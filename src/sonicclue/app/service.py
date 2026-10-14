@@ -332,7 +332,16 @@ class SonicClueApp:
             shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
             raise
         if spec.stimulus is not None:
-            handle.stimulus_played = self.output.play(spec.stimulus, spec.duration_s)
+            try:
+                handle.stimulus_played = self.output.play(spec.stimulus, spec.duration_s)
+            except BaseException:
+                sess.cancel()
+                try:
+                    sess.wait(timeout=15)
+                except Exception:  # noqa: BLE001
+                    pass
+                shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
+                raise
         return handle
 
     def capture_blocking(self, spec: CaptureSpec, timeout_extra: float = 30.0) -> CaptureManifest | None:
@@ -417,7 +426,7 @@ class SonicClueApp:
         cfg = config or self.analysis_config()
         if nf > SPOOL_ABOVE_S * m.sample_rate_hz:
             # long capture: disk-spooled channels keep resident memory bounded (spec 16 section 5)
-            with ChannelSpool(lambda a, b: store.load_capture_data(m, a, b), nf, len(m.channels), store.path / "derived") as sp:
+            with ChannelSpool(lambda a, b: store.load_capture_data(m, a, b), nf, len(m.channels), store.path / "derived", cancel) as sp:
                 out = run_analysis(m, sp, sensors, cals, cfg, cancel=cancel)
         else:
             out = run_analysis(m, store.load_capture_data(m, 0, nf), sensors, cals, cfg, cancel=cancel)

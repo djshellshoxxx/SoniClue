@@ -25,6 +25,11 @@ CLASS_LABEL = {
 }
 
 
+def _csv_safe(row):
+    """Neutralise spreadsheet formula injection: prefix cells starting with = + - @ (or tab/CR) with a quote."""
+    return [("'" + c) if isinstance(c, str) and c[:1] in ("=", "+", "-", "@", "\t", "\r") else c for c in row]
+
+
 def figure_png(spec: FigureSpec, dpi: int = 110) -> bytes:
     fig, ax = plt.subplots(figsize=(7.5, 3.2), dpi=dpi)
     for label, x, y in spec.series:
@@ -127,8 +132,8 @@ def render_csv_zip(doc: ReportDocument, extra_tables: dict[str, tuple[list[str],
                 n += 1
                 sio = io.StringIO()
                 w = csv.writer(sio)
-                w.writerow(t.columns)
-                w.writerows(t.rows)
+                w.writerow(_csv_safe(t.columns))
+                w.writerows(_csv_safe(r) for r in t.rows)
                 safe = "".join(ch if ch.isalnum() else "_" for ch in t.title.lower())[:40]
                 z.writestr(f"{n:02d}_{s.key}_{safe}.csv", sio.getvalue())
         sio = io.StringIO()
@@ -136,12 +141,12 @@ def render_csv_zip(doc: ReportDocument, extra_tables: dict[str, tuple[list[str],
         w.writerow(["section", "class", "statement", "refs"])
         for s in doc.sections:
             for st in s.statements:
-                w.writerow([s.key, st.cls.value, st.text, " ".join(st.refs)])
+                w.writerow(_csv_safe([s.key, st.cls.value, st.text, " ".join(st.refs)]))
         z.writestr("statements.csv", sio.getvalue())
         for name, (cols, rows) in (extra_tables or {}).items():
             sio = io.StringIO()
             w = csv.writer(sio)
-            w.writerow(cols)
-            w.writerows(rows)
+            w.writerow(_csv_safe(cols))
+            w.writerows(_csv_safe(r) for r in rows)
             z.writestr(f"{name}.csv", sio.getvalue())
     return buf.getvalue()

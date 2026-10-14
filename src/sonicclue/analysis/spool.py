@@ -10,6 +10,7 @@ deleted on exit.
 
 from __future__ import annotations
 
+import gc
 import shutil
 import tempfile
 from collections.abc import Callable
@@ -17,7 +18,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ..domain.errors import AnalysisError
+from ..domain.errors import AnalysisError, CancelledError
 
 BLOCK_FRAMES = 1 << 20
 DISK_MARGIN = 1.1  # required free space as a multiple of the spool size
@@ -79,10 +80,11 @@ Loader = Callable[[int, int], np.ndarray]  # (start, stop) -> float32 (frames, c
 class ChannelSpool:
     """Context manager exposing ``shape`` and ``column(i)`` like a 2-D array."""
 
-    def __init__(self, loader: Loader, frames: int, channels: int, workdir: Path | None = None):
+    def __init__(self, loader: Loader, frames: int, channels: int, workdir: Path | None = None, cancel=None):
         self.shape = (frames, channels)
         self._loader = loader
         self._workdir = workdir
+        self._cancel = cancel
         self._dir: Path | None = None
         self._maps: list[FileArray] = []
 
@@ -99,6 +101,8 @@ class ChannelSpool:
             self._maps = [FileArray(self._dir / f"ch{c}.f32", frames) for c in range(nch)]
             for a in range(0, frames, BLOCK_FRAMES):
                 b = min(frames, a + BLOCK_FRAMES)
+                if self._cancel and self._cancel():
+                    raise CancelledError("analysis cancelled")
                 blk = self._loader(a, b)
                 if blk.shape != (b - a, nch):
                     raise AnalysisError(f"capture block {a}:{b} has shape {blk.shape}, expected {(b - a, nch)}")
@@ -118,5 +122,6 @@ class ChannelSpool:
             m.close()
         self._maps = []
         if self._dir is not None:
+            gc.collect()  # drop lingering references so Windows can delete the files
             shutil.rmtree(self._dir, ignore_errors=True)
             self._dir = None

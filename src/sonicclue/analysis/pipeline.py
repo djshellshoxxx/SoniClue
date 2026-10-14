@@ -185,7 +185,7 @@ def analyze(manifest: CaptureManifest, data: np.ndarray, sensors: dict[str, Sens
                 arrays[f"env_f_{ch.index}"] = ef
                 arrays[f"env_{ch.index}"] = ep
         ev = transient.detect_events(xs, scr.valid, fs, cfg.event_frame_s, cfg.event_threshold_db)
-        dur_min = max(manifest.frames / fs / 60.0, 1e-9)
+        dur_min = max(len(xs) / fs / 60.0, 1e-9)
         tr = TransientSummary(event_count=len(ev["times"]), events_per_min=len(ev["times"]) / dur_min,
                               median_interval_s=_tv(ev["median_interval_s"], "fewer than two events"),
                               periodic=ev["periodic"], max_excess_db=ev["max_excess_db"], event_times_s=ev["times"][:2000])
