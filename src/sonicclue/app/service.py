@@ -399,7 +399,7 @@ class SonicClueApp:
             raise
 
     def _finish_bridge_import(self, store, cid, w, asm, chans, context) -> CaptureManifest:
-        h, axes = asm.hello, asm.samples.shape[1]
+        h, _axes = asm.hello, asm.samples.shape[1]
         frames = importer.array_writer_feed(w, asm.samples)
         from ..domain.model import Gap
 

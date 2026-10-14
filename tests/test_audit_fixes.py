@@ -1,6 +1,5 @@
 """Regression tests for the full code audit (session of TASK-012)."""
 
-import json
 import threading
 import time
 

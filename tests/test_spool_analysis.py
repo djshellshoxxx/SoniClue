@@ -7,7 +7,7 @@ from sonicclue.analysis.pipeline import analyze
 from sonicclue.analysis.spool import ChannelSpool
 from sonicclue.domain.errors import AnalysisError
 from sonicclue.domain.model import CaptureManifest, ChannelConfig, DeviceInfo, utcnow
-from sonicclue.dsp import levels, signals
+from sonicclue.dsp import levels
 
 FS = 8000.0
 
