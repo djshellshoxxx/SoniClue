@@ -357,6 +357,13 @@ class SonicClueApp:
         self._validate_channels(chans)
         cid = new_id("cap")
         w = store.new_capture_writer(cid, info["samplerate"], info["channels"], header={})
+        try:
+            return self._finish_audio_import(store, cid, w, path, info, chans, context)
+        except BaseException:
+            shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
+            raise
+
+    def _finish_audio_import(self, store, cid, w, path, info, chans, context) -> CaptureManifest:
         frames = importer.import_audio(path, w)
         dst = store.capture_dir(cid) / f"original{Path(path).suffix.lower()}"
         shutil.copy2(path, dst)
@@ -380,11 +387,19 @@ class SonicClueApp:
         asm = importer.decode_bridge_dump(path)
         h = asm.hello
         axes = asm.samples.shape[1]
-        chans = [ChannelConfig(index=i, label=f"{'xyz'[i] if axes > 1 else 'accel'}", sensor_id=sensor_id, agc="off")
+        chans = [ChannelConfig(index=i, label=("accel" if axes == 1 else "xyz"[i] if i < 3 else f"a{i}"), sensor_id=sensor_id, agc="off")
                  for i in range(axes)]
         self._validate_channels(chans)
         cid = new_id("cap")
         w = store.new_capture_writer(cid, h.sample_rate_hz, axes, header={})
+        try:
+            return self._finish_bridge_import(store, cid, w, asm, chans, context)
+        except BaseException:
+            shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
+            raise
+
+    def _finish_bridge_import(self, store, cid, w, asm, chans, context) -> CaptureManifest:
+        h, axes = asm.hello, asm.samples.shape[1]
         frames = importer.array_writer_feed(w, asm.samples)
         from ..domain.model import Gap
 
@@ -471,8 +486,9 @@ class SonicClueApp:
         mr, mo = self.capture(ref_id), self.capture(other_id)
         cr = [c.label for c in mr.channels].index(ref_label)
         co = [c.label for c in mo.channels].index(other_label)
-        xr = self.capture_data(ref_id)[:, cr].astype(float)
-        xo = self.capture_data(other_id)[:, co].astype(float)
+        lim = float(self.settings.get("max_analysis_seconds", MAX_ANALYSIS_S))
+        xr = self.capture_data(ref_id, 0.0, lim)[:, cr].astype(float)
+        xo = self.capture_data(other_id, 0.0, lim)[:, co].astype(float)
         mapping, flags, o_rs = estimate_mapping(xr, mr.sample_rate_hz, xo, mo.sample_rate_hz, ref_id=ref_id, other_id=other_id)
         self._s().put("clock_mapping", mapping, parent=ref_id)
         self._s().audit("sync.mapping", mapping.id, f"{ref_id}<-{other_id} offset {mapping.offset_s:.6f}s drift {mapping.drift_ppm:.1f}ppm")
@@ -643,17 +659,30 @@ class SonicClueApp:
                            device=base.device, samplerate=step.sample_rate_hz or base.samplerate, exclusive=base.exclusive,
                            stimulus=step.stimulus, output_device=base.output_device)
 
+    def _gate_stats(self, manifest: CaptureManifest, block: int = 1 << 20) -> tuple[bool, np.ndarray]:
+        """(any |x| >= 0.999, per-channel std) computed in bounded blocks."""
+        store = self._s()
+        n, nch = manifest.frames, len(manifest.channels)
+        clipped, s1, s2 = False, np.zeros(nch), np.zeros(nch)
+        for a in range(0, n, block):
+            d = store.load_capture_data(manifest, a, min(n, a + block)).astype(np.float64)
+            clipped = clipped or bool(np.any(np.abs(d) >= 0.999))
+            s1 += d.sum(axis=0)
+            s2 += (d * d).sum(axis=0)
+        mean = s1 / max(n, 1)
+        return clipped, np.sqrt(np.maximum(s2 / max(n, 1) - mean * mean, 0.0))
+
     def evaluate_gates(self, run: ProcedureRun, manifest: CaptureManifest) -> list[str]:
         """Return failed gate messages (empty = accepted)."""
         step, _ = procedures.current(run)
         failed = []
-        data = None
+        stats = None
         for g in step.gates:
-            if g in ("no_clipping", "signal_present") and data is None:
-                data = self._s().load_capture_data(manifest)
-            if g == "no_clipping" and np.any(np.abs(data) >= 0.999):
+            if g in ("no_clipping", "signal_present") and stats is None:
+                stats = self._gate_stats(manifest)
+            if g == "no_clipping" and stats[0]:
                 failed.append("clipping: reduce the interface gain and repeat")
-            elif g == "signal_present" and np.all(np.std(data, axis=0) < 1e-7):
+            elif g == "signal_present" and np.all(stats[1] < 1e-7):
                 failed.append("no signal: check that the input is connected and not muted")
             elif g == "comparable_to_first":
                 firsts = [c for k, v in run.captures.items() if not k.endswith("__rejected") for c in v]

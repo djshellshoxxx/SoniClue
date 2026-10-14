@@ -195,6 +195,7 @@ class CaseStore:
         raise CaseLockedError("could not acquire case lock")
 
     def close(self) -> None:
+        self._closed = True
         self.close_connections()
         if self._locked:
             try:
@@ -210,7 +211,11 @@ class CaseStore:
         self.close()
 
     # ---------------- sqlite ----------------
+    _closed = False
+
     def _conn(self) -> sqlite3.Connection:
+        if self._closed:
+            raise StorageError("case is closed")
         c = getattr(self._local, "conn", None)
         if c is None:
             uri = sqlite_uri(self.path / "case.db", self.readonly)

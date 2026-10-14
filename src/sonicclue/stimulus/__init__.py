@@ -150,15 +150,17 @@ class OutputController:
 
     def _start(self, buf: np.ndarray, rec: StimulusRecord, dur: float) -> None:
         self._buf, self._pos, self._stop_fade = buf, 0, 0
+        self._finishing = False
         self._done.clear()
         self.last_error = None
+        self._finishing = False
+        self.state = OutState.PLAYING  # before start(): the callback must see PLAYING
         try:
             self._stream = self.backend.open_output(self._device, self._fs, 1, 1024, self._fill, self._on_finished)
             self._stream.start()
         except Exception as exc:  # noqa: BLE001
             self._mute(f"output failed: {exc}")
             raise SafetyError(f"cannot start output: {exc}") from exc
-        self.state = OutState.PLAYING
         self.history.append({"kind": rec.kind, "level_dbfs": rec.level_dbfs, "duration_s": dur, "t": time.time()})
         self._watchdog = threading.Timer(dur + 1.0, lambda: self._mute("watchdog stop"))
         self._watchdog.daemon = True
@@ -178,7 +180,8 @@ class OutputController:
             self._pos = len(buf)
         else:
             self._pos += n
-        if self._pos >= len(buf):
+        if self._pos >= len(buf) and not self._finishing:
+            self._finishing = True
             threading.Thread(target=self._mute, args=(None,), daemon=True).start()
         return out
 

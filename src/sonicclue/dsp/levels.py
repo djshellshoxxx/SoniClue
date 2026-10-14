@@ -65,26 +65,27 @@ def screen_channel(x: np.ndarray, fs: float, channel: int, gaps: list[tuple[int,
                                  message=f"{nf} non-finite samples (NaN/inf) excluded"))
     for a, b in gaps:
         valid[a:b] = False
-    idx_parts = []
+    guard = max(1, int(CLIP_GUARD_S * fs))
+    nclip, first, last = 0, 0, 0
     for i in range(0, n, CHUNK):
         c = np.asarray(x[i : i + CHUNK])
         with np.errstate(invalid="ignore"):
-            hit = np.flatnonzero(np.abs(c) >= CLIP_LEVEL)
-        if hit.size:
-            idx_parts.append(hit + i)
-    idx = np.concatenate(idx_parts) if idx_parts else np.zeros(0, np.int64)
-    nclip = int(idx.size)
-    if nclip:
-        guard = max(1, int(CLIP_GUARD_S * fs))
-        # Exclude the guard region around each clipped sample: merge overlapping
-        # [idx-guard, idx+guard] intervals, then clear each (no full-length temporaries).
-        lo = np.clip(idx - guard, 0, n)
-        hi = np.clip(idx + guard + 1, 0, n)
+            hit = np.flatnonzero(np.abs(c) >= CLIP_LEVEL) + i
+        if not hit.size:
+            continue
+        if not nclip:
+            first = int(hit[0])
+        last = int(hit[-1])
+        nclip += int(hit.size)
+        # exclude [idx-guard, idx+guard] around each clipped sample: merge overlapping
+        # intervals within the chunk, then clear them (memory bounded by the chunk)
+        lo, hi = np.clip(hit - guard, 0, n), np.clip(hit + guard + 1, 0, n)
         brk = np.flatnonzero(lo[1:] > hi[:-1]) + 1
-        for a, b in zip(lo[np.r_[0, brk]], hi[np.r_[brk - 1, len(idx) - 1]]):
-            valid[a:b] = False
+        for u, v in zip(lo[np.r_[0, brk]], hi[np.r_[brk - 1, len(hit) - 1]]):
+            valid[u:v] = False
+    if nclip:
         flags.append(QualityFlag(code=QualityCode.CLIPPING, severity=Severity.INVALID, channel=channel,
-                                 start_frame=int(idx[0]), end_frame=int(idx[-1]) + 1,
+                                 start_frame=first, end_frame=last + 1,
                                  message=f"{nclip} clipped samples; surrounding {CLIP_GUARD_S*1000:.0f} ms excluded from spectra, "
                                          "absolute levels and harmonic content are unreliable"))
     cnt, mean, ac_rms, _pk = _masked_moments(x, valid)
