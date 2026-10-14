@@ -21,6 +21,8 @@ Code: `src/sonicclue/sync/__init__.py`; app `align_captures`; CLI `align`; GUI B
 5. |drift| > 2000 ppm is physically implausible for audio converters: SYNC_INSUFFICIENT, mapping rejected.
 6. Ambiguity: the largest secondary correlation peak (outside ±0.5 ms) divided by the main peak. If > 0.8 (periodic signals), SYNC_AMBIGUOUS, mapping rejected.
 
+Memory bound: `align_captures` reads at most the first `ALIGN_MAX_S` (1800 s) of each capture; offset and drift are well determined over that span and float64 memory stays bounded.
+
 Alignment (`align`): integer shift plus a frequency-domain fractional shift (rounding to whole samples would decorrelate broadband content), drift correction, and the outer 1% of the overlap marked invalid.
 
 ## 4 Eligibility (exact conditions)
