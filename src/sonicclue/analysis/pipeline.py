@@ -42,6 +42,7 @@ from ..domain.units import Quantity
 from ..dsp import cross, levels, spectral, tonal, transient
 from ..sensors import calibration as cal
 from ..sensors.capabilities import capabilities
+from .spool import ChannelSpool
 
 ALGORITHM_VERSION = "1.0.0"
 MAX_CROSS_PAIRS = 15
@@ -65,13 +66,15 @@ def _tv(v, reason):
 def analyze(manifest: CaptureManifest, data: np.ndarray, sensors: dict[str, SensorDescriptor],
             calibrations: dict[str, CalibrationProfile], config: AnalysisConfig | None = None,
             cancel=None) -> AnalysisOutput:
-    """``data``: float array of shape (frames, channels) in FS. ``cancel``: optional
-    callable returning True to abort (checked between channels; raises CancelledError)."""
+    """``data``: float array of shape (frames, channels) in FS, or a ``ChannelSpool``
+    (privately owned, disk-backed channels for full-length captures; same results).
+    ``cancel``: optional callable returning True to abort (checked between channels;
+    raises CancelledError)."""
     from ..domain.errors import AnalysisError, CancelledError
 
     cfg = config or AnalysisConfig()
     fs = manifest.sample_rate_hz
-    if data.ndim != 2 or data.shape[1] != len(manifest.channels):
+    if len(data.shape) != 2 or data.shape[1] != len(manifest.channels):
         raise AnalysisError(f"data shape {data.shape} does not match {len(manifest.channels)} channels")
     gaps = [(g.start_frame, g.end_frame) for g in manifest.gaps]
     fmax = min(cfg.fmax_hz or fs / 2, fs / 2)
@@ -93,7 +96,7 @@ def analyze(manifest: CaptureManifest, data: np.ndarray, sensors: dict[str, Sens
         # already be contiguous; ascontiguousarray would then alias caller data.
         # Later nan_to_num(copy=False) and calibration scaling are in-place.
         # Analysis must never mutate the original capture or another view of it.
-        x = np.array(data[:, col], dtype=np.float32, order="C", copy=True)
+        x = data.column(col) if isinstance(data, ChannelSpool) else np.array(data[:, col], dtype=np.float32, order="C", copy=True)
         scr = levels.screen_channel(x, fs, ch.index, gaps)
         flags = list(scr.flags)
         sensor = sensors.get(ch.sensor_id) if ch.sensor_id else None
@@ -114,9 +117,7 @@ def analyze(manifest: CaptureManifest, data: np.ndarray, sensors: dict[str, Sens
         elif ch.agc == "unknown" and (sensor is None or sensor.kind in ACOUSTIC_KINDS):
             flags.append(QualityFlag(code=QualityCode.AGC_UNKNOWN, severity=Severity.WARNING, channel=ch.index,
                                      message="AGC state unknown: confirm it is off before trusting level comparisons"))
-        xs = np.nan_to_num(x, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
-        if scale != 1.0:
-            xs *= np.float32(scale)
+        xs = _sanitize_scale(x, scale)
         del x
         valids[ch.index] = scr.valid
         scaled[ch.index] = xs  # kept for cross-channel analysis
@@ -184,7 +185,7 @@ def analyze(manifest: CaptureManifest, data: np.ndarray, sensors: dict[str, Sens
                 arrays[f"env_f_{ch.index}"] = ef
                 arrays[f"env_{ch.index}"] = ep
         ev = transient.detect_events(xs, scr.valid, fs, cfg.event_frame_s, cfg.event_threshold_db)
-        dur_min = max(manifest.frames / fs / 60.0, 1e-9)
+        dur_min = max(len(xs) / fs / 60.0, 1e-9)
         tr = TransientSummary(event_count=len(ev["times"]), events_per_min=len(ev["times"]) / dur_min,
                               median_interval_s=_tv(ev["median_interval_s"], "fewer than two events"),
                               periodic=ev["periodic"], max_excess_db=ev["max_excess_db"], event_times_s=ev["times"][:2000])
@@ -202,13 +203,32 @@ def analyze(manifest: CaptureManifest, data: np.ndarray, sensors: dict[str, Sens
     return AnalysisOutput(result, arrays)
 
 
+def _sanitize_scale(x: np.ndarray, scale: float, chunk: int = 1 << 21) -> np.ndarray:
+    """In place, in bounded chunks: non-finite -> 0, then calibration scaling."""
+    sc = np.float32(scale)
+    for i in range(0, len(x), chunk):
+        c = x[i : i + chunk]
+        np.nan_to_num(c, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
+        if scale != 1.0:
+            c *= sc
+        if not isinstance(x, np.ndarray):
+            x[i : i + chunk] = c  # file-backed: slices are copies, write back
+    return x
+
+
 def _overview(x: np.ndarray, points: int = 4000) -> np.ndarray:
     """Min/max envelope for waveform display: shape (2, m)."""
     if len(x) <= points:
-        return np.vstack([x, x]).astype(np.float32)
+        xa = np.asarray(x[:], dtype=np.float32)
+        return np.vstack([xa, xa])
     g = len(x) // points
-    r = x[: g * points].reshape(points, g)
-    return np.vstack([r.min(axis=1), r.max(axis=1)]).astype(np.float32)
+    lo, hi = np.empty(points, np.float32), np.empty(points, np.float32)
+    step = max(1, (1 << 21) // g)  # output points per chunk: bounded temporaries
+    for i in range(0, points, step):
+        j = min(points, i + step)
+        r = np.asarray(x[i * g : j * g], dtype=np.float32).reshape(j - i, g)
+        lo[i:j], hi[i:j] = r.min(axis=1), r.max(axis=1)
+    return np.vstack([lo, hi])
 
 
 def _cross(manifest, chans, scaled, valids, cfg, fs, fmax, arrays, cancel):

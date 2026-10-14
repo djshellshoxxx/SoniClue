@@ -108,6 +108,7 @@ class CaptureSession:
         self._writer: threading.Thread | None = None
         self._stop_evt = threading.Event()
         self._cancel = False
+        self._user_stop = False
         self._error: str | None = None
         self._frames = 0
         self._gaps: list[Gap] = []
@@ -119,6 +120,7 @@ class CaptureSession:
         self._clip = np.zeros(channels, bool)
         self._clip_count = np.zeros(channels, np.int64)
         self._done = threading.Event()
+        self._state_lock = threading.RLock()
         self.started_utc = utcnow()
         self._chunks: list[dict] = []
 
@@ -150,13 +152,15 @@ class CaptureSession:
             raise DeviceError(self._error) from exc
 
     def stop(self) -> None:
-        if self.state in (SessionState.IDLE,):
-            self._set(SessionState.CANCELLED)
-            self._done.set()
-            return
-        if self.state in TERMINAL or self.state is SessionState.STOPPING:
-            return
-        self._set(SessionState.STOPPING)
+        with self._state_lock:
+            if self.state in (SessionState.IDLE,):
+                self._set(SessionState.CANCELLED)
+                self._done.set()
+                return
+            if self.state in TERMINAL or self.state is SessionState.STOPPING:
+                return
+            self._user_stop = True
+            self._set(SessionState.STOPPING)
         self._stop_evt.set()
 
     def cancel(self) -> None:
@@ -215,12 +219,7 @@ class CaptureSession:
                 if self.max_frames is not None and expected >= self.max_frames:
                     self._stop_evt.set()
                     break
-            if self._stream is not None:
-                try:
-                    self._stream.stop()
-                    self._stream.close()
-                except Exception:  # noqa: BLE001
-                    pass
+            self._close_stream()
             # drain blocks that arrived before the stream stopped
             while not self._q.empty() and not self._cancel:
                 idx, block, status = self._q.get_nowait()
@@ -237,21 +236,36 @@ class CaptureSession:
                         self.sink.write(block)
                         expected += len(block)
             self._frames = expected
+            if (self.max_frames is not None and expected < self.max_frames and not self._cancel
+                    and not self._user_stop and not self._error):
+                self._error = f"stream ended early: {expected} of {self.max_frames} frames"
         except Exception as exc:  # noqa: BLE001 - disk full, sink failure
             self._error = f"writer failed: {exc}"
         finally:
+            self._stop_evt.set()
+            self._close_stream()
             try:
                 self._chunks = self.sink.close()
             except Exception as exc:  # noqa: BLE001
                 self._error = self._error or f"finalising capture failed: {exc}"
             self._finish_flags()
-            if self._cancel:
-                self._set(SessionState.CANCELLED)
-            elif self._error:
-                self._set(SessionState.FAILED)
-            else:
-                self._set(SessionState.COMPLETED)
+            with self._state_lock:
+                if self._cancel:
+                    self._set(SessionState.CANCELLED)
+                elif self._error:
+                    self._set(SessionState.FAILED)
+                else:
+                    self._set(SessionState.COMPLETED)
             self._done.set()
+
+    def _close_stream(self) -> None:
+        st, self._stream = self._stream, None
+        if st is not None:
+            try:
+                st.stop()
+                st.close()
+            except Exception:  # noqa: BLE001
+                pass
 
     def _fill_gap(self, start: int, n: int, reason: str) -> int:
         """Zero-fill ``n`` dropped frames (clamped to the requested duration). Returns frames written."""

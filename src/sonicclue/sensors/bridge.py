@@ -127,6 +127,9 @@ class BridgeDecoder:
             return None
 
 
+MAX_ZERO_FILL = 50_000_000  # total frames of lost-packet zero fill per dump (bounds memory on crafted input)
+
+
 @dataclass
 class BridgeAssembly:
     hello: BridgeHello | None
@@ -152,7 +155,12 @@ def assemble(messages: list, decoder: BridgeDecoder | None = None) -> BridgeAsse
     prev = None
     rate = hello.sample_rate_hz if hello else None
     nonuniform = 0
+    zero_total = 0
     for d in data:
+        if d.axes != axes:
+            flags.append(QualityFlag(code=QualityCode.DROPOUT_GAP, severity=Severity.WARNING,
+                                     message=f"packet with {d.axes} axes (expected {axes}) discarded"))
+            continue
         n = len(d.samples)
         if prev is not None:
             expected_ctr = (prev.sample_counter + len(prev.samples)) % 2**32
@@ -161,7 +169,8 @@ def assemble(messages: list, decoder: BridgeDecoder | None = None) -> BridgeAsse
                                          message=f"bridge sample counter reset at frame {pos} (device restarted)"))
             elif d.sample_counter != expected_ctr:
                 lost = (d.sample_counter - expected_ctr) % 2**32
-                if 0 < lost < 10_000_000:
+                if 0 < lost < 10_000_000 and zero_total + lost <= MAX_ZERO_FILL:
+                    zero_total += lost
                     blocks.append(np.zeros((lost, axes), np.float32))
                     gaps.append((pos, pos + lost))
                     pos += lost

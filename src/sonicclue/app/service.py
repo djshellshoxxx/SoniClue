@@ -28,6 +28,7 @@ from ..acquisition import importer
 from ..acquisition.backends import PortAudioBackend, SimulatedBackend, SimWorld
 from ..acquisition.session import CaptureSession, SessionState
 from ..analysis.pipeline import analyze as run_analysis
+from ..analysis.spool import ChannelSpool
 from ..compare import comparability
 from ..compare.compare import Item, compare as run_compare
 from ..diagnostics import CaptureView, DiagnosticInputs, diagnose as run_diagnose
@@ -63,8 +64,13 @@ from ..storage.files import atomic_write_text, make_readonly, sha256_file
 from ..storage.store import CaseStore, Workspace, new_id
 from .jobs import JobRunner
 
+# Captures longer than SPOOL_ABOVE_S are analysed from a disk spool (bounded memory);
+# MAX_ANALYSIS_S matches the 4 h live-capture limit (spec 16).
+SPOOL_ABOVE_S = 600
+MAX_ANALYSIS_S = 4 * 3600
+
 DEFAULT_SETTINGS = {"mode": "guided", "backend": "portaudio", "device": None, "samplerate": 48000, "output_device": None,
-                    "analysis": {}, "auto_analyze": True, "max_analysis_seconds": 600}
+                    "analysis": {}, "auto_analyze": True, "max_analysis_seconds": MAX_ANALYSIS_S}
 
 
 def default_workspace() -> Path:
@@ -326,7 +332,16 @@ class SonicClueApp:
             shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
             raise
         if spec.stimulus is not None:
-            handle.stimulus_played = self.output.play(spec.stimulus, spec.duration_s)
+            try:
+                handle.stimulus_played = self.output.play(spec.stimulus, spec.duration_s)
+            except BaseException:
+                sess.cancel()
+                try:
+                    sess.wait(timeout=15)
+                except Exception:  # noqa: BLE001
+                    pass
+                shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
+                raise
         return handle
 
     def capture_blocking(self, spec: CaptureSpec, timeout_extra: float = 30.0) -> CaptureManifest | None:
@@ -342,6 +357,13 @@ class SonicClueApp:
         self._validate_channels(chans)
         cid = new_id("cap")
         w = store.new_capture_writer(cid, info["samplerate"], info["channels"], header={})
+        try:
+            return self._finish_audio_import(store, cid, w, path, info, chans, context)
+        except BaseException:
+            shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
+            raise
+
+    def _finish_audio_import(self, store, cid, w, path, info, chans, context) -> CaptureManifest:
         frames = importer.import_audio(path, w)
         dst = store.capture_dir(cid) / f"original{Path(path).suffix.lower()}"
         shutil.copy2(path, dst)
@@ -365,11 +387,19 @@ class SonicClueApp:
         asm = importer.decode_bridge_dump(path)
         h = asm.hello
         axes = asm.samples.shape[1]
-        chans = [ChannelConfig(index=i, label=f"{'xyz'[i] if axes > 1 else 'accel'}", sensor_id=sensor_id, agc="off")
+        chans = [ChannelConfig(index=i, label=("accel" if axes == 1 else "xyz"[i] if i < 3 else f"a{i}"), sensor_id=sensor_id, agc="off")
                  for i in range(axes)]
         self._validate_channels(chans)
         cid = new_id("cap")
         w = store.new_capture_writer(cid, h.sample_rate_hz, axes, header={})
+        try:
+            return self._finish_bridge_import(store, cid, w, asm, chans, context)
+        except BaseException:
+            shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
+            raise
+
+    def _finish_bridge_import(self, store, cid, w, asm, chans, context) -> CaptureManifest:
+        h, _axes = asm.hello, asm.samples.shape[1]
         frames = importer.array_writer_feed(w, asm.samples)
         from ..domain.model import Gap
 
@@ -399,15 +429,22 @@ class SonicClueApp:
     def analyze(self, cid: str, config: AnalysisConfig | None = None, cancel=None):
         store = self._s()
         m = self.capture(cid)
-        maxf = int(self.settings.get("max_analysis_seconds", 1800) * m.sample_rate_hz)
-        data = store.load_capture_data(m, 0, min(m.frames, maxf))
+        maxf = int(self.settings.get("max_analysis_seconds", MAX_ANALYSIS_S) * m.sample_rate_hz)
+        nf = min(m.frames, maxf)
         if m.frames > maxf:
             m = m.model_copy(update={"quality": list(m.quality) + [QualityFlag(
                 code=QualityCode.PARTIAL_CAPTURE, severity=Severity.INFO,
                 message=f"only the first {maxf / m.sample_rate_hz:.0f} s were analysed (max_analysis_seconds)")]})
         case = store.case
         cals = {c.id: c for c in store.list("calibration")}
-        out = run_analysis(m, data, {s.id: s for s in case.sensors}, cals, config or self.analysis_config(), cancel=cancel)
+        sensors = {s.id: s for s in case.sensors}
+        cfg = config or self.analysis_config()
+        if nf > SPOOL_ABOVE_S * m.sample_rate_hz:
+            # long capture: disk-spooled channels keep resident memory bounded (spec 16 section 5)
+            with ChannelSpool(lambda a, b: store.load_capture_data(m, a, b), nf, len(m.channels), store.path / "derived", cancel) as sp:
+                out = run_analysis(m, sp, sensors, cals, cfg, cancel=cancel)
+        else:
+            out = run_analysis(m, store.load_capture_data(m, 0, nf), sensors, cals, cfg, cancel=cancel)
         return store.save_analysis(out.result, out.arrays)
 
     def analysis(self, cid: str, ensure: bool = True):
@@ -449,8 +486,9 @@ class SonicClueApp:
         mr, mo = self.capture(ref_id), self.capture(other_id)
         cr = [c.label for c in mr.channels].index(ref_label)
         co = [c.label for c in mo.channels].index(other_label)
-        xr = self.capture_data(ref_id)[:, cr].astype(float)
-        xo = self.capture_data(other_id)[:, co].astype(float)
+        lim = float(self.settings.get("max_analysis_seconds", MAX_ANALYSIS_S))
+        xr = self.capture_data(ref_id, 0.0, lim)[:, cr].astype(float)
+        xo = self.capture_data(other_id, 0.0, lim)[:, co].astype(float)
         mapping, flags, o_rs = estimate_mapping(xr, mr.sample_rate_hz, xo, mo.sample_rate_hz, ref_id=ref_id, other_id=other_id)
         self._s().put("clock_mapping", mapping, parent=ref_id)
         self._s().audit("sync.mapping", mapping.id, f"{ref_id}<-{other_id} offset {mapping.offset_s:.6f}s drift {mapping.drift_ppm:.1f}ppm")
@@ -621,17 +659,30 @@ class SonicClueApp:
                            device=base.device, samplerate=step.sample_rate_hz or base.samplerate, exclusive=base.exclusive,
                            stimulus=step.stimulus, output_device=base.output_device)
 
+    def _gate_stats(self, manifest: CaptureManifest, block: int = 1 << 20) -> tuple[bool, np.ndarray]:
+        """(any |x| >= 0.999, per-channel std) computed in bounded blocks."""
+        store = self._s()
+        n, nch = manifest.frames, len(manifest.channels)
+        clipped, s1, s2 = False, np.zeros(nch), np.zeros(nch)
+        for a in range(0, n, block):
+            d = store.load_capture_data(manifest, a, min(n, a + block)).astype(np.float64)
+            clipped = clipped or bool(np.any(np.abs(d) >= 0.999))
+            s1 += d.sum(axis=0)
+            s2 += (d * d).sum(axis=0)
+        mean = s1 / max(n, 1)
+        return clipped, np.sqrt(np.maximum(s2 / max(n, 1) - mean * mean, 0.0))
+
     def evaluate_gates(self, run: ProcedureRun, manifest: CaptureManifest) -> list[str]:
         """Return failed gate messages (empty = accepted)."""
         step, _ = procedures.current(run)
         failed = []
-        data = None
+        stats = None
         for g in step.gates:
-            if g in ("no_clipping", "signal_present") and data is None:
-                data = self._s().load_capture_data(manifest)
-            if g == "no_clipping" and np.any(np.abs(data) >= 0.999):
+            if g in ("no_clipping", "signal_present") and stats is None:
+                stats = self._gate_stats(manifest)
+            if g == "no_clipping" and stats[0]:
                 failed.append("clipping: reduce the interface gain and repeat")
-            elif g == "signal_present" and np.all(np.std(data, axis=0) < 1e-7):
+            elif g == "signal_present" and np.all(stats[1] < 1e-7):
                 failed.append("no signal: check that the input is connected and not muted")
             elif g == "comparable_to_first":
                 firsts = [c for k, v in run.captures.items() if not k.endswith("__rejected") for c in v]

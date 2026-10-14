@@ -38,11 +38,15 @@ class JobRunner:
         fut = self._pool.submit(fn, *args, cancel=tok, **kwargs)
         with self._lock:
             self._tokens[fut] = tok
-        fut.add_done_callback(lambda f: self._tokens.pop(f, None))
+        fut.add_done_callback(self._forget)
         return fut, tok
+
+    def _forget(self, fut: Future) -> None:
+        with self._lock:
+            self._tokens.pop(fut, None)
 
     def shutdown(self, wait: bool = True) -> None:
         with self._lock:
-            for t in self._tokens.values():
+            for t in list(self._tokens.values()):
                 t.cancel()
         self._pool.shutdown(wait=wait, cancel_futures=True)

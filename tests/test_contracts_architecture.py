@@ -63,7 +63,12 @@ def _imports(path: Path):
                 base = list(pkg[:-1])[: len(pkg) - node.level] if node.level > 1 else list(pkg[:-1])
                 if path.name == "__init__.py" and node.level == 1:
                     base = list(pkg[:-1])
-                yield "sonicclue." + ".".join(base + ([node.module] if node.module else []))
+                stem = "sonicclue." + ".".join(base + ([node.module] if node.module else []))
+                if node.module is None:  # `from .. import x`: x is the imported module
+                    for a in node.names:
+                        yield f"{stem.rstrip('.')}.{a.name}"
+                else:
+                    yield stem
             else:
                 yield node.module or ""
 

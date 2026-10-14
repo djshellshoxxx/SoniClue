@@ -30,7 +30,7 @@
 
 * Diagnostic thresholds were validated on synthetic and simulated scenarios only. Real-world accuracy has not been measured.
 * No ASIO (licence). No simultaneous multi-device capture (use offline alignment). No MEMS bridge firmware (protocol only).
-* Analysis covers the first 600 s of a capture by default (setting `max_analysis_seconds`); streamed full-length analysis is planned.
+* Analysis covers up to 4 h of a capture (`max_analysis_seconds`); captures over 600 s are analysed from a disk spool (needs free disk of about 0.7 GB per channel-hour).
 * Windows builds are unsigned (SmartScreen warning). Licence not yet decided (see LICENSE-NOTICE.md).
 * Python audio callbacks may drop blocks on very slow machines. Any drop is recorded as a gap and never hidden.
 * Screen-reader accessibility has not been tested.

@@ -67,7 +67,9 @@ def compare(case_id: str, group_a: list[Item], group_b: list[Item], channel_labe
         ch = _chan(it, channel_label)
         p = band_power(it.arrays, ch.channel, lo, hi)
         sd = stats.welch_level_sd_db(ch.n_averages, (hi - lo) / max(ch.enbw_hz, 1e-9))
-        return units.power_db(p or 0.0, ch.quantity), sd
+        if p is None:
+            raise AnalysisError(f"capture {it.manifest.id} has no stored spectra; re-run its analysis with arrays enabled")
+        return units.power_db(p, ch.quantity), sd
 
     oa = [overall(it) for it in group_a]
     ob = [overall(it) for it in group_b]

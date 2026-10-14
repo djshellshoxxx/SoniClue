@@ -137,7 +137,22 @@ def loopback_test(backend, out_device: int, in_device: int, samplerate: float = 
 class QualificationMatrix:
     def __init__(self, path: Path):
         self.path = Path(path)
-        self.records: list[dict] = json.loads(self.path.read_text()) if self.path.exists() else []
+        self.records: list[dict] = self._load()
+
+    def _load(self) -> list[dict]:
+        if not self.path.exists():
+            return []
+        try:
+            recs = json.loads(self.path.read_text())
+            if isinstance(recs, list):
+                return recs
+        except (ValueError, OSError):
+            pass
+        try:  # corrupt: keep the damaged file for inspection and start empty
+            self.path.replace(self.path.with_suffix(".corrupt"))
+        except OSError:
+            pass
+        return []
 
     def add(self, device: str, backend: str, results: dict, simulated: bool) -> dict:
         status = SIMULATED if simulated else (QUALIFIED if results.get("passed") else FAILED)

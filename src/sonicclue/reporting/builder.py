@@ -136,7 +136,7 @@ def build_report(inp: ReportInputs) -> tuple[ReportDocument, dict[str, FigureSpe
                                  c.created_utc.date().isoformat()] for c in inp.calibrations])
     devs = sorted({m.device.name for m, _, _ in inp.captures})
     qual_tab = ReportTable(title="Device qualification", columns=["device", "status"],
-                           rows=[[d, inp.qualification.get(d, "UNQUALIFIED")] for d in devs])
+                           rows=[[_red(d, "names", r), inp.qualification.get(d, "UNQUALIFIED")] for d in devs])
     tiers = sorted({a.tier for _, a, _ in inp.captures if a})
     st = [ReportStatement(cls=C, text=f"Capability tier(s) of the analysed captures: {', '.join(map(str, tiers)) or 'n/a'}")]
     st.append(ReportStatement(cls=M, text="Devices not marked QUALIFIED have not been verified on reference hardware; their accuracy is unknown."))
@@ -184,7 +184,7 @@ def build_report(inp: ReportInputs) -> tuple[ReportDocument, dict[str, FigureSpe
 
     # 6 evidence
     if dx:
-        st = [ReportStatement(cls=e.statement_class, text=e.summary + ("" if e.valid else " [not usable as evidence]"), refs=[e.id])
+        st = [ReportStatement(cls=e.statement_class, text=("[redacted]" if ("names" in r or "notes" in r) else e.summary) + ("" if e.valid else " [not usable as evidence]"), refs=[e.id])
               for e in dx.evidence]
         sections.append(ReportSection(key="evidence", title="Evidence", statements=st))
         # 7 hypotheses

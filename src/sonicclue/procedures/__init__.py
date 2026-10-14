@@ -133,7 +133,7 @@ def record_capture(run: ProcedureRun, capture_id: str, accepted: bool) -> Proced
 
 
 def latest_intervention(run: ProcedureRun) -> InterventionRecord | None:
-    return next(iter(run.interventions.values()), None) if run.interventions else None
+    return list(run.interventions.values())[-1] if run.interventions else None
 
 
 def pause(run: ProcedureRun) -> ProcedureRun:
