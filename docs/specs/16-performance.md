@@ -23,7 +23,7 @@ Benchmarks: `tools/benchmark.py` (each metric in a fresh subprocess; peak RSS fr
 | Diagnosis (demo case, 17 captures) | ≤ 2 s | `diagnose_demo_case` | 0.11 s | met on VM |
 | Report HTML+PDF (demo case) | ≤ 30 s | `demo_report_html_pdf` | 6.5 s | met on VM |
 | Archive export + import 100 MB | ≤ 60 s | `archive_roundtrip_100MB` | 4.9 s | met on VM |
-| Analysis 60 min × 2 ch @ 48 kHz (spooled) | ≤ 1.5 GB resident, results identical to in-memory | `analysis_60min_2ch_spooled` | see section 5 | see section 5 |
+| Analysis 60 min × 2 ch @ 48 kHz (spooled) | ≤ 1.5 GB resident, results identical to in-memory | `analysis_60min_2ch_spooled` | 115 s, 1.21 GB (build VM) | met on VM |
 | Long sessions | 4 h live capture; full-length analysis up to `max_analysis_seconds` (default 14400) | design + section 5 | – | TASK-012 implemented |
 | 8-ch 1-h capture without dropouts | 0 gaps | hardware test HQ-03 | **UNEXECUTED** (no hardware) | VALIDATION_REQUIRED |
 
