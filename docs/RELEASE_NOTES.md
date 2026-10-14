@@ -16,7 +16,7 @@
 
 ## Validation actually performed
 
-* 0 automated tests pass on Linux (build VM, Python 3.11): numerical invariants against independent references, adversarial diagnostic cases ADV-001..010, storage/recovery/archive attacks, acquisition failure injection, calibration and synchronization, stimulus interlocks, reports, CLI end to end, and offscreen GUI flows.
+* 203 automated tests pass on Linux (build VM, Python 3.11): numerical invariants against independent references, adversarial diagnostic cases ADV-001..010, storage/recovery/archive attacks, acquisition failure injection, calibration and synchronization, stimulus interlocks, reports, CLI end to end, and offscreen GUI flows.
 * Contract checks: 20 generated schemas current; 47/47 examples behave as declared (jsonschema and pydantic); 12/12 numerical reference vectors within tolerance.
 * Linux x64 standalone bundle built (`SonicClue-0.1.0-linux-x64.tar.gz`, 168 MB, SHA-256 `3a502fcac7a46186de3710038485525c154759322b3a7042ba925f56aef6faf3`, build id `39134931f9a3-20261012T053834Z`, built from the working tree before commit) and smoke-tested in a clean environment: version, self-test, simulated demo with report, device listing, GUI construction of all screens.
 * Windows x64 bundle: built and smoke-tested by the CI workflow (`.github/workflows/ci.yml`). See the repository Actions run for status; it was not built on a local Windows machine.

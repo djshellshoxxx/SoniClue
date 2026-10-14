@@ -7,7 +7,7 @@ Last updated: 2026-10-14 (session 4: TASK-012 streamed analysis, full code audit
 * Product: **SonicClue 0.1.0**, software-complete and hardware-unqualified. Repository `djshellshoxxx/SoniClue`.
 * Delivered on branch `claude/sonicclue-v0.1.0` via a pull request into `main` (see the PR list for its number and merge state).
 * Specification package: `docs/specs/` (25 documents, 20 generated JSON Schemas, 47 contract examples, test vectors, decision register + 18 ADRs, coverage/wiring/validation/compatibility/backlog/risk/licence matrices, audit, handoff).
-* Code: `src/sonicclue/` (16 packages). Tests: 0, all passing on Linux (Ubuntu and Windows in CI). CI: `.github/workflows/ci.yml` (Ubuntu + Windows test and build; draft release on tag `v*`).
+* Code: `src/sonicclue/` (16 packages). Tests: 203, all passing on Linux (Ubuntu and Windows in CI). CI: `.github/workflows/ci.yml` (Ubuntu + Windows test and build; draft release on tag `v*`).
 * Linux bundle built locally: `SonicClue-0.1.0-linux-x64.tar.gz`, SHA-256 `3a502fcac7a46186de3710038485525c154759322b3a7042ba925f56aef6faf3` (also in the session outputs).
 
 ## Completed requirements
