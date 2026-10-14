@@ -48,6 +48,24 @@ m=CaptureManifest(id='cap-bench02',case_id='c',created_utc=utcnow(),source='live
   channels=[ChannelConfig(index=0,label='a'),ChannelConfig(index=1,label='b')],frames=n,clock_domain='x',software_version='b')
 T0=time.perf_counter(); analyze(m,x,{},{}); RESULT=time.perf_counter()-T0
 """,
+    "analysis_60min_2ch_spooled": """
+import numpy as np
+from sonicclue.analysis.pipeline import analyze
+from sonicclue.analysis.spool import ChannelSpool
+from sonicclue.domain.model import *
+from sonicclue.dsp import signals
+fs=48000.; n=int(3600*fs)
+def load(a,b):
+    out=np.empty((b-a,2),np.float32)
+    out[:,0]=signals.white_noise(0.05,(b-a)/fs,fs,seed=a%997+1)[:b-a]
+    out[:,1]=signals.white_noise(0.02,(b-a)/fs,fs,seed=a%991+5)[:b-a]
+    return out
+m=CaptureManifest(id='cap-bench03',case_id='c',created_utc=utcnow(),source='live',device=DeviceInfo(backend='file'),sample_rate_hz=fs,
+  channels=[ChannelConfig(index=0,label='a'),ChannelConfig(index=1,label='b')],frames=n,clock_domain='x',software_version='b')
+T0=time.perf_counter()
+with ChannelSpool(load,n,2) as sp: analyze(m,sp,{},{})
+RESULT=time.perf_counter()-T0
+""",
     "writer_throughput_MBps": """
 import numpy as np, tempfile, pathlib
 from sonicclue.storage.writer import CaptureWriter
@@ -149,7 +167,7 @@ def main() -> int:
     results = {}
     env = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
     for name, code in SNIPPETS.items():
-        if quick and name in ("analysis_600s_2ch", "archive_roundtrip_100MB", "capture_sim_30s_realtime_cpu_pct"):
+        if quick and name in ("analysis_600s_2ch", "analysis_60min_2ch_spooled", "archive_roundtrip_100MB", "capture_sim_30s_realtime_cpu_pct"):
             continue
         t0 = time.perf_counter()
         r = subprocess.run([sys.executable, "-c", RUNNER.format(code=code)], capture_output=True, text=True, env=env, cwd=tempfile.gettempdir())

@@ -28,6 +28,7 @@ from ..acquisition import importer
 from ..acquisition.backends import PortAudioBackend, SimulatedBackend, SimWorld
 from ..acquisition.session import CaptureSession, SessionState
 from ..analysis.pipeline import analyze as run_analysis
+from ..analysis.spool import ChannelSpool
 from ..compare import comparability
 from ..compare.compare import Item, compare as run_compare
 from ..diagnostics import CaptureView, DiagnosticInputs, diagnose as run_diagnose
@@ -63,8 +64,13 @@ from ..storage.files import atomic_write_text, make_readonly, sha256_file
 from ..storage.store import CaseStore, Workspace, new_id
 from .jobs import JobRunner
 
+# Captures longer than SPOOL_ABOVE_S are analysed from a disk spool (bounded memory);
+# MAX_ANALYSIS_S matches the 4 h live-capture limit (spec 16).
+SPOOL_ABOVE_S = 600
+MAX_ANALYSIS_S = 4 * 3600
+
 DEFAULT_SETTINGS = {"mode": "guided", "backend": "portaudio", "device": None, "samplerate": 48000, "output_device": None,
-                    "analysis": {}, "auto_analyze": True, "max_analysis_seconds": 600}
+                    "analysis": {}, "auto_analyze": True, "max_analysis_seconds": MAX_ANALYSIS_S}
 
 
 def default_workspace() -> Path:
@@ -399,15 +405,22 @@ class SonicClueApp:
     def analyze(self, cid: str, config: AnalysisConfig | None = None, cancel=None):
         store = self._s()
         m = self.capture(cid)
-        maxf = int(self.settings.get("max_analysis_seconds", 1800) * m.sample_rate_hz)
-        data = store.load_capture_data(m, 0, min(m.frames, maxf))
+        maxf = int(self.settings.get("max_analysis_seconds", MAX_ANALYSIS_S) * m.sample_rate_hz)
+        nf = min(m.frames, maxf)
         if m.frames > maxf:
             m = m.model_copy(update={"quality": list(m.quality) + [QualityFlag(
                 code=QualityCode.PARTIAL_CAPTURE, severity=Severity.INFO,
                 message=f"only the first {maxf / m.sample_rate_hz:.0f} s were analysed (max_analysis_seconds)")]})
         case = store.case
         cals = {c.id: c for c in store.list("calibration")}
-        out = run_analysis(m, data, {s.id: s for s in case.sensors}, cals, config or self.analysis_config(), cancel=cancel)
+        sensors = {s.id: s for s in case.sensors}
+        cfg = config or self.analysis_config()
+        if nf > SPOOL_ABOVE_S * m.sample_rate_hz:
+            # long capture: disk-spooled channels keep resident memory bounded (spec 16 section 5)
+            with ChannelSpool(lambda a, b: store.load_capture_data(m, a, b), nf, len(m.channels), store.path / "derived") as sp:
+                out = run_analysis(m, sp, sensors, cals, cfg, cancel=cancel)
+        else:
+            out = run_analysis(m, store.load_capture_data(m, 0, nf), sensors, cals, cfg, cancel=cancel)
         return store.save_analysis(out.result, out.arrays)
 
     def analysis(self, cid: str, ensure: bool = True):

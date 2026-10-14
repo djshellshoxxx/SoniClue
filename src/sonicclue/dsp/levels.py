@@ -55,7 +55,9 @@ def _masked_moments(x: np.ndarray, valid: np.ndarray) -> tuple[int, float, float
 
 def screen_channel(x: np.ndarray, fs: float, channel: int, gaps: list[tuple[int, int]] = ()) -> Screening:
     n = len(x)
-    valid = np.isfinite(x)
+    valid = np.empty(n, bool)
+    for i in range(0, n, CHUNK):
+        valid[i : i + CHUNK] = np.isfinite(np.asarray(x[i : i + CHUNK]))
     flags: list[QualityFlag] = []
     nf = int(n - np.count_nonzero(valid))
     if nf:
@@ -74,12 +76,13 @@ def screen_channel(x: np.ndarray, fs: float, channel: int, gaps: list[tuple[int,
     nclip = int(idx.size)
     if nclip:
         guard = max(1, int(CLIP_GUARD_S * fs))
-        # Mark guard regions around clipped samples via a cumulative-sum interval trick (O(n)).
-        marks = np.zeros(n + 1, dtype=np.int32)
-        np.add.at(marks, np.clip(idx - guard, 0, n), 1)
-        np.add.at(marks, np.clip(idx + guard + 1, 0, n), -1)
-        valid &= np.cumsum(marks[:-1]) == 0
-        del marks
+        # Exclude the guard region around each clipped sample: merge overlapping
+        # [idx-guard, idx+guard] intervals, then clear each (no full-length temporaries).
+        lo = np.clip(idx - guard, 0, n)
+        hi = np.clip(idx + guard + 1, 0, n)
+        brk = np.flatnonzero(lo[1:] > hi[:-1]) + 1
+        for a, b in zip(lo[np.r_[0, brk]], hi[np.r_[brk - 1, len(idx) - 1]]):
+            valid[a:b] = False
         flags.append(QualityFlag(code=QualityCode.CLIPPING, severity=Severity.INVALID, channel=channel,
                                  start_frame=int(idx[0]), end_frame=int(idx[-1]) + 1,
                                  message=f"{nclip} clipped samples; surrounding {CLIP_GUARD_S*1000:.0f} ms excluded from spectra, "

@@ -1,6 +1,6 @@
 task_id,title,req_ids,depends_on,owned_paths,acceptance_criteria,test_ids,blocked_by_decision,status
 TASK-001..011,M0-M9 (contracts → GUI/CLI),all R1,-,src/sonicclue/**,spec acceptance tests,full suite,-,DONE
-TASK-012,Streamed full-length analysis for captures > 600 s,REQ-PERF-001,-,src/sonicclue/analysis; dsp,60-min 2-ch analysis < 1.5 GB on minimum hardware; results equal to non-streamed within 1e-9,new perf + equivalence tests,-,OPEN
+TASK-012,Streamed full-length analysis for captures > 600 s,REQ-PERF-001,-,src/sonicclue/analysis; dsp,60-min 2-ch analysis < 1.5 GB on minimum hardware; results equal to non-streamed within 1e-9,new perf + equivalence tests,-,DONE
 TASK-015,Linux AppImage,REQ-PKG-002,TASK-020,packaging/,AppImage runs on Ubuntu 22.04 and Fedora 40 clean VMs,HQ-09,-,OPEN
 TASK-020,Clean-machine installs (Windows 11 VM; Ubuntu VM),REQ-PKG-001/002,CI build,packaging/,HQ-09 passes offline,HQ-09,-,OPEN (needs VM)
 TASK-021,Reference-machine benchmarks + sustained capture,REQ-PERF-001/002,DEC-002,tools/benchmark.py,spec 16 budgets met; HQ-03 0 gaps,HQ-03,DEC-002,OPEN

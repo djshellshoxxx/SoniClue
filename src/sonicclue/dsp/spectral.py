@@ -178,7 +178,7 @@ def spectrogram(x: np.ndarray, fs: float, nperseg: int, window: str = "hann", ma
     cols = []
     idx = np.arange(nperseg)
     for i in range(0, len(starts), 256):
-        fr = np.asarray(x, dtype=np.float64)[starts[i : i + 256, None] + idx]
+        fr = np.asarray(x[starts[i : i + 256, None] + idx], dtype=np.float64)
         fr = (fr - fr.mean(axis=1, keepdims=True)) * w
         s = (np.abs(np.fft.rfft(fr, axis=1)) ** 2) * scale
         s[:, 1 : (nperseg + 1) // 2] *= 2.0  # one-sided: double all but DC (and Nyquist for even nperseg)
