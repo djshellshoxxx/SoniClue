@@ -235,6 +235,7 @@ class SonicClueApp:
 
     def close_case(self) -> None:
         if self.store is not None:
+            self.jobs.cancel_all()  # no job may touch the case after it is closed
             self.store.close()
             self.store = None
 
