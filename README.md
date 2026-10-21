@@ -8,7 +8,7 @@ SonicClue helps you find out *what* is making an unwanted noise or vibration, *h
 * Works with an ordinary microphone. Adds contact pickups, accelerometers and calibrated measurement microphones when you have them.
 * Windows x64 and Linux x64 standalone builds (portable, no admin rights).
 
-> **Status (0.1.0):** software-complete and tested on synthetic and simulated data. **No audio interface or sensor has been hardware-qualified yet.** All physical devices are listed as UNQUALIFIED. See [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
+> **Status (0.1.0):** software-complete and tested on synthetic and simulated data. **No audio interface or sensor has been hardware-qualified yet.** All physical devices are listed as UNQUALIFIED. Availability of a build script or packaging configuration does not imply real-hardware qualification. See [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 ## Quick start
 
