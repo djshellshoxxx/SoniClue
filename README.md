@@ -25,6 +25,10 @@ sonicclue-cli --help
 
 Typical workflow: **Case dashboard** → New investigation → **Devices & sensors** (describe each channel; turn AGC off) → **Guided tests** (Baseline, then the recommended tests) → **Hypotheses & evidence** → **Report builder**. Full guide: [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
 
+## Project wiki
+
+Start with the [SonicClue Wiki](docs/wiki/Home.md) for user workflows, feature explanations, developer setup, architecture, and troubleshooting. Its [wiki index](docs/wiki/README.md) links each topic.
+
 ## Repository layout
 
 ```
