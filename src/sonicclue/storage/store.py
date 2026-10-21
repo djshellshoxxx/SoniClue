@@ -16,6 +16,7 @@ of propagating bad data.
 from __future__ import annotations
 
 import json
+import re
 import os
 import shutil
 import socket
@@ -52,7 +53,7 @@ from ..domain.model import (
     dump_json,
     utcnow,
 )
-from .files import atomic_write_text, sha256_file
+from .files import atomic_write_text, rmtree_force, sha256_file
 from .migrations import STORE_VERSION, migrate
 from .writer import CaptureWriter, read_chunks
 
@@ -441,6 +442,9 @@ class CaseStore:
             dst.close()
 
 
+_CASE_ID_RE = re.compile(r"[A-Za-z0-9_\-]{6,64}")
+
+
 class Workspace:
     """Root folder holding cases (``cases/``) and ``settings.json``."""
 
@@ -449,6 +453,8 @@ class Workspace:
         (self.root / "cases").mkdir(parents=True, exist_ok=True)
 
     def case_path(self, case_id: str) -> Path:
+        if not _CASE_ID_RE.fullmatch(case_id or ""):
+            raise StorageError(f"no such case (invalid id {case_id!r})", code="SC_NOT_FOUND")
         return self.root / "cases" / case_id
 
     def create_case(self, title: str, **fields) -> CaseStore:
@@ -481,12 +487,7 @@ class Workspace:
         p = self.case_path(case_id)
         if (p / "case.lock").exists():
             raise CaseLockedError("close the case before deleting it")
-        for f in p.rglob("*"):
-            try:
-                os.chmod(f, 0o666)
-            except OSError:
-                pass
-        shutil.rmtree(p)
+        rmtree_force(p)
 
     @staticmethod
     def iso(dt: datetime) -> str:

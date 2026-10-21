@@ -60,7 +60,7 @@ from ..reporting.builder import ReportInputs, build_report
 from ..sensors import calibration as cal
 from ..stimulus import OutputController
 from ..storage.archive import export_case, import_case
-from ..storage.files import atomic_write_text, make_readonly, sha256_file
+from ..storage.files import atomic_write_text, make_readonly, rmtree_force, sha256_file
 from ..storage.store import CaseStore, Workspace, new_id
 from .jobs import JobRunner
 
@@ -125,12 +125,7 @@ class CaptureHandle:
         self._finalized = True
         cdir = self.store.capture_dir(self.id)
         if oc.state is SessionState.CANCELLED:
-            for f in cdir.rglob("*"):
-                try:
-                    os.chmod(f, 0o666)
-                except OSError:
-                    pass
-            shutil.rmtree(cdir, ignore_errors=True)
+            rmtree_force(cdir)
             self.store.audit("capture.cancel", self.id, "discarded by user")
             return None
         if oc.frames == 0:

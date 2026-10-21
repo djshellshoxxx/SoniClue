@@ -75,7 +75,7 @@ class DiagnosticInputs:
 
 
 def _eid(kind: str, *parts) -> str:
-    h = hashlib.sha1("|".join([kind, *map(str, parts)]).encode()).hexdigest()[:10]
+    h = hashlib.sha1("|".join([kind, *map(str, parts)]).encode(), usedforsecurity=False).hexdigest()[:10]
     return f"ev-{kind[:6]}-{h}"
 
 

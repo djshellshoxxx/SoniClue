@@ -33,6 +33,7 @@
   "additionalProperties": false,
   "properties": {
     "case_id": {
+      "pattern": "^[A-Za-z0-9_\\-]{6,64}$",
       "title": "Case Id",
       "type": "string"
     },
