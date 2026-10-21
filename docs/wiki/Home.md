@@ -6,9 +6,17 @@ This guide supplements the repository’s [README](../../README.md), [User Guide
 
 ## Start here
 
-- [User guide](User-Guide.md): install, set up sensors, run an investigation, understand results, and export a report.
+- [User guide](../USER_GUIDE.md): the full user guide in `docs/USER_GUIDE.md` (install, sensors, running an investigation)
+- [Developer overview](Developer-Overview.md): architecture, design decisions, data flow
+- [Developer code map](Developer-Code-Map.md): where things live and where to change them
+- [Developer build and test](Developer-Build-and-Test.md): setup, checks, CI, packaging
+- [Developer conventions](Developer-Conventions.md): code rules, gotchas, known limits
+
+Companion pages (kept from earlier revisions):
+
+- [User guide (wiki)](User-Guide.md): install, set up sensors, run an investigation, understand results, and export a report.
 - [Feature reference](Feature-Reference.md): what the major app features do and how they fit together.
-- [Developer guide](Developer-Guide.md): set up a development environment and run checks.
+- [Developer guide](Developer-Guide.md): earlier developer notes.
 - [Architecture and data flow](Architecture-and-Data-Flow.md): follow a capture from an audio device to an evidence report.
 - [Troubleshooting and limitations](Troubleshooting-and-Limitations.md): common problems, qualification status, and boundaries on conclusions.
 
