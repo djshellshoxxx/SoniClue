@@ -68,6 +68,7 @@ from .jobs import JobRunner
 # MAX_ANALYSIS_S matches the 4 h live-capture limit (spec 16).
 SPOOL_ABOVE_S = 600
 MAX_ANALYSIS_S = 4 * 3600
+ALIGN_MAX_S = 1800  # clock alignment reads at most the first 30 min of each capture (offset + drift are well determined; bounds float64 memory)
 
 DEFAULT_SETTINGS = {"mode": "guided", "backend": "portaudio", "device": None, "samplerate": 48000, "output_device": None,
                     "analysis": {}, "auto_analyze": True, "max_analysis_seconds": MAX_ANALYSIS_S}
@@ -235,6 +236,7 @@ class SonicClueApp:
 
     def close_case(self) -> None:
         if self.store is not None:
+            self.jobs.cancel_all()  # no job may touch the case after it is closed
             self.store.close()
             self.store = None
 
@@ -486,7 +488,7 @@ class SonicClueApp:
         mr, mo = self.capture(ref_id), self.capture(other_id)
         cr = [c.label for c in mr.channels].index(ref_label)
         co = [c.label for c in mo.channels].index(other_label)
-        lim = float(self.settings.get("max_analysis_seconds", MAX_ANALYSIS_S))
+        lim = min(float(self.settings.get("max_analysis_seconds", MAX_ANALYSIS_S)), ALIGN_MAX_S)
         xr = self.capture_data(ref_id, 0.0, lim)[:, cr].astype(float)
         xo = self.capture_data(other_id, 0.0, lim)[:, co].astype(float)
         mapping, flags, o_rs = estimate_mapping(xr, mr.sample_rate_hz, xo, mo.sample_rate_hz, ref_id=ref_id, other_id=other_id)

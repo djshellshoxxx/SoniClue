@@ -12,7 +12,7 @@ reach a cancellation point.
 from __future__ import annotations
 
 import threading
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from typing import Callable
 
 
@@ -44,6 +44,15 @@ class JobRunner:
     def _forget(self, fut: Future) -> None:
         with self._lock:
             self._tokens.pop(fut, None)
+
+    def cancel_all(self, timeout: float | None = 30.0) -> None:
+        """Cancel every pending/running job and wait for them to stop (the pool stays usable).
+        Must not be called from a job thread."""
+        with self._lock:
+            items = list(self._tokens.items())
+        for _, tok in items:
+            tok.cancel()
+        wait([f for f, _ in items], timeout=timeout)
 
     def shutdown(self, wait: bool = True) -> None:
         with self._lock:

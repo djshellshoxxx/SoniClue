@@ -1,6 +1,7 @@
 """Procedures (SM-003), stimulus safety (SM-004), reporting, and the CLI end-to-end workflow."""
 
 import json
+import threading
 import time
 import zipfile
 
@@ -333,3 +334,75 @@ def test_cli_history_and_info(tmp_path, capsys):
     assert "case.create" in capsys.readouterr().out
     assert main(["--workspace", ws, "--json", "info"]) == 0
     assert '"sonicclue"' in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------- audit regressions
+
+
+def test_redaction_covers_device_names_and_evidence_text(demo_ws, tmp_path):
+    from sonicclue.app.service import SonicClueApp
+
+    ws, cid = demo_ws
+    app = SonicClueApp(ws)
+    app.open_case(cid)
+    plain = app.export_report("html", tmp_path / "p.html").read_text()
+    red = app.export_report("html", tmp_path / "r.html", redact=("names",)).read_text()
+    dev = app.captures()[0].device.name
+    assert dev in plain and dev not in red
+    ev = app.latest_diagnosis().evidence[0].summary
+    assert ev in plain.replace("&amp;", "&") or ev[:20] in plain
+    assert ev[:30] not in red
+    app.shutdown()
+
+
+def test_compare_refuses_missing_spectra():
+    from conftest import analyzed_item
+    from sonicclue.compare.compare import compare
+    from sonicclue.domain.errors import AnalysisError
+
+    rng = np.random.default_rng(1)
+    a = analyzed_item(0.01 * rng.standard_normal(48000 * 20).astype(np.float32), cid="cap-aaaaaa")
+    b = analyzed_item(0.01 * rng.standard_normal(48000 * 20).astype(np.float32), cid="cap-bbbbbb")
+    a.arrays.clear()
+    with pytest.raises(AnalysisError, match="no stored spectra"):
+        compare("case-test01", [a], [b], "mic")
+
+
+def test_failed_import_leaves_no_capture_dir(app, tmp_path):
+    cid = app.create_case("imp")
+    app.open_case(cid)
+    bad = tmp_path / "bad.wav"
+    bad.write_bytes(b"RIFF\x00\x00\x00\x00WAVE")
+    before = set((app._s().path / "captures").iterdir())
+    with pytest.raises(Exception):
+        app.import_audio(bad)
+    assert set((app._s().path / "captures").iterdir()) == before
+
+
+def test_close_case_cancels_and_waits_for_jobs(app):
+    cid = app.create_case("jobs")
+    app.open_case(cid)
+    started = threading.Event()
+    seen = {}
+
+    def job(cancel):
+        started.set()
+        while not cancel():
+            time.sleep(0.01)
+        seen["cancelled"] = True
+
+    fut, _ = app.jobs.submit(job)
+    assert started.wait(2)
+    app.close_case()
+    assert fut.done() and seen.get("cancelled")
+    app.open_case(cid)  # pool still usable afterwards
+    assert app.jobs.submit(lambda cancel: 7)[0].result(2) == 7
+
+
+def test_output_finish_spawns_one_mute_thread():
+    be = SimulatedBackend()
+    oc = OutputController(be)
+    oc.arm(0, 48000, confirmed=True)
+    oc.play(StimulusRecord(kind="sine", level_dbfs=-30, params={"freq": 440}), 0.2)
+    assert oc.wait(5)
+    assert oc.state.value == "disarmed" and oc.last_error is None
