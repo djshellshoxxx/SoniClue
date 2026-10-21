@@ -19,6 +19,7 @@ dependencies = [
   "sounddevice>=0.4.6",
   "matplotlib>=3.8",
   "reportlab>=4.0",
+  "cryptography>=42",
 ]
 
 [project.optional-dependencies]

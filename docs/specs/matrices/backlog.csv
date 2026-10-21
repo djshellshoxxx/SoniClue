@@ -10,10 +10,10 @@ TASK-024,Two-device alignment validation,REQ-SYN-002,TASK-022,sync/,HQ-05 pass,H
 TASK-025,Contact pickup airborne-control validation,REQ-SEN-002,TASK-022,diagnostics/,HQ-06 pass,HQ-06,DEC-004,BLOCKED (hardware)
 TASK-026,Sensor bridge board + firmware,REQ-SEN-004,DEC-004b,firmware/ (new),spec 06 §6 firmware acceptance tests,bridge HW tests,DEC-004b,BLOCKED
 TASK-030,ASIO backend,REQ-ACQ-013,DEC-003a,acquisition/,ASIO capture qualified,HQ-02 (ASIO),DEC-003a,BLOCKED
-TASK-031,Simultaneous multi-device capture session,REQ-ACQ-014,TASK-024,acquisition/; app/,two devices recorded in one session with automatic alignment,new tests + HQ-05,-,OPEN (future)
+TASK-031,Simultaneous multi-device capture session,REQ-ACQ-014,TASK-024,acquisition/; app/,two devices recorded in one session with automatic alignment,new tests + HQ-05,-,SOFTWARE DONE (acquisition/multi.py; HQ-05 hardware validation pending)
 TASK-032,Code signing in CI,REQ-PKG-003,DEC-009a,.github/; packaging/,signtool verify passes,CI,DEC-009a,BLOCKED
 TASK-033,Project licence,REQ-SEC-002,DEC-009b,LICENSE,licence committed; metadata updated,-,DEC-009b,BLOCKED
-TASK-034,Signed updater,REQ-SEC-003,TASK-032,app/,updater verifies signatures before install,new tests,DEC-018,OPEN (future)
+TASK-034,Signed updater,REQ-SEC-003,TASK-032,app/,updater verifies signatures before install,new tests,DEC-018,SOFTWARE DONE (app/updater.py Ed25519+SHA-256 verify; signing key/CI blocked by DEC-009a)
 TASK-040,Real-world threshold validation,REQ-DX-004 RQ-1,hardware + users,diagnostics/,held-out evaluation per spec 17 §6,evaluation report,DEC-008,OPEN
 TASK-041,Probabilistic/ML diagnosis feasibility,REQ-DSP-011,TASK-040,diagnostics/,calibrated model beats rules on held-out data,evaluation,DEC-011,BLOCKED
 TASK-042,Independent review of specs 08 and 09,RISK-014,-,docs/specs,review findings recorded and resolved,-,-,OPEN
