@@ -274,6 +274,10 @@ def test_resonance_q_measurable_vs_tone_resolution_limited():
 def test_compare_levels_measured_and_min_effect():
     d, u, sig, kind = stats.compare_levels([60.0, 60.2, 59.9], [54.0, 54.3, 53.8], 0.3, 0.3)
     assert kind == "measured" and sig and d == pytest.approx(-6.0, abs=0.1)
+    # Identical repeats have zero sample variance; measured u95 retains its
+    # documented 0.25 dB floor instead of implying perfect certainty.
+    _d, u, _sig, kind = stats.compare_levels([60.0, 60.0], [60.0, 60.0], 0.0, 0.0)
+    assert kind == "measured" and u == pytest.approx(0.25)
     d, u, sig, kind = stats.compare_levels([60.0, 60.05], [59.6, 59.65], 0.01, 0.01)
     assert not sig  # statistically tight but below 1 dB practical minimum
     d, u, sig, kind = stats.compare_levels([60.0], [57.0], 0.4, 0.4)

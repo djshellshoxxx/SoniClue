@@ -1,6 +1,6 @@
 # SonicClue 0.1.0 release notes
 
-**Release type:** software-complete, **hardware-unqualified** (DEC-010). Date 2026-10-12.
+**Release type:** software-complete, **hardware-unqualified** (DEC-010). Original build record dated 2026-10-12; software updates through 2026-10-22.
 
 ## What is included
 
@@ -29,8 +29,14 @@
 ## Known limitations
 
 * Diagnostic thresholds were validated on synthetic and simulated scenarios only. Real-world accuracy has not been measured.
-* No ASIO (licence). No simultaneous multi-device capture (use offline alignment). No MEMS bridge firmware (protocol only).
+* No ASIO (licence). Coordinated simultaneous multi-device capture is available through `sonicclue-cli capture-multi`; clock mappings require a shared reference and may be rejected when ambiguous. No MEMS bridge firmware (protocol only).
 * Analysis covers up to 4 h of a capture (`max_analysis_seconds`); captures over 600 s are analysed from a disk spool (needs free disk of about 0.7 GB per channel-hour).
 * Windows builds are unsigned (SmartScreen warning). Licence not yet decided (see LICENSE-NOTICE.md).
 * Python audio callbacks may drop blocks on very slow machines. Any drop is recorded as a gap and never hidden.
 * Screen-reader accessibility has not been tested.
+
+## Software updates through 2026-10-22
+
+* Added app-service and CLI entry points for concurrent multi-device captures. Clock mappings are estimated after recording against the first device and a shared reference; physical two-device qualification remains pending (HQ-05).
+* Tightened diagnostic evidence: an A-B-A stability check now requires a verified completed equipment-state run; invalid capture quality generates explicit artifact evidence; electrical-hum chain tests require comparable, valid captures.
+* Documented and tested the 0.25 dB uncertainty floor for repeated measured comparisons with zero observed variance.

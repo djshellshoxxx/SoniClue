@@ -16,5 +16,5 @@ TASK-033,Project licence,REQ-SEC-002,DEC-009b,LICENSE,licence committed; metadat
 TASK-034,Signed updater,REQ-SEC-003,TASK-032,app/,updater verifies signatures before install,new tests,DEC-018,SOFTWARE DONE (app/updater.py Ed25519+SHA-256 verify; signing key/CI blocked by DEC-009a)
 TASK-040,Real-world threshold validation,REQ-DX-004 RQ-1,hardware + users,diagnostics/,held-out evaluation per spec 17 §6,evaluation report,DEC-008,OPEN
 TASK-041,Probabilistic/ML diagnosis feasibility,REQ-DSP-011,TASK-040,diagnostics/,calibrated model beats rules on held-out data,evaluation,DEC-011,BLOCKED
-TASK-042,Independent review of specs 08 and 09,RISK-014,-,docs/specs,review findings recorded and resolved,-,-,OPEN
+TASK-042,Independent review of specs 08 and 09,RISK-014,-,docs/specs,review findings recorded and resolved,tests/test_diagnostics_adversarial.py; tests/test_dsp_numerics.py,-,DONE (four findings resolved; broader product audit remains coordinator-authored)
 TASK-043,Screen-reader accessibility test,REQ-UI-004,-,gui/,NVDA/Orca walkthrough of 12 screens,manual test record,-,OPEN

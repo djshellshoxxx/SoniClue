@@ -183,6 +183,62 @@ def cmd_capture(args):
         app.close_case()
 
 
+def cmd_capture_multi(args):
+    """Capture on several inputs, then estimate each clock against device 1."""
+    from ..app.service import CaptureSpec
+
+    app = _app(args)
+    app.open_case(args.case)
+    try:
+        channels = _channels(args, app)
+        ctx = CaptureContext(condition_label=args.label or "", equipment_state=_kv(args.state))
+        specs = [CaptureSpec(channels=channels, duration_s=args.duration, context=ctx, backend=args.backend,
+                             device=device, samplerate=args.rate, exclusive=args.exclusive)
+                 for device in args.device]
+        alignment_channels = args.align_channel or [channels[0].label if channels else "" for _ in specs]
+        handle = app.start_multi_capture(specs, alignment_channels=alignment_channels)
+        started = time.monotonic()
+        try:
+            while any(state.value in ("running", "stopping") for state in handle.states.values()):
+                if not args.json:
+                    active = sum(state.value in ("running", "stopping") for state in handle.states.values())
+                    print(f"\rrecording on {active}/{len(specs)} devices  {time.monotonic() - started:.1f}s", end="", flush=True)
+                time.sleep(0.25)
+                if time.monotonic() - started > args.duration * 3 + 30:
+                    handle.stop()
+        except KeyboardInterrupt:
+            handle.stop()
+        outcome = handle.finalize(timeout=30)
+        if not args.json:
+            print()
+        if args.analyze:
+            for capture in outcome.captures:
+                app.analyze(capture.id)
+        serial_alignments = []
+        lines = []
+        for result in outcome.alignments:
+            entry = {k: v for k, v in result.items() if k not in ("mapping", "flags")}
+            if result.get("mapping") is not None:
+                entry["mapping"] = dump_dict(result["mapping"])
+                m = result["mapping"]
+                lines.append(f"alignment {m.reference_capture_id} <- {m.other_capture_id}: offset {m.offset_s * 1000:.3f} ms, "
+                             f"drift {m.drift_ppm:+.2f} ppm, sigma {m.residual_s * 1e6:.1f} us, "
+                             f"eligible below {m.eligible_max_freq_hz:.0f} Hz")
+            if result.get("flags") is not None:
+                entry["flags"] = [dump_dict(f) for f in result["flags"]]
+                lines.extend(f"  [{f.severity.value}] {f.message}" for f in result["flags"])
+            if result.get("error"):
+                lines.append(f"alignment unavailable: {result['error']}")
+            serial_alignments.append(entry)
+        captures = [dump_dict(m) for m in outcome.captures]
+        lines[:0] = [f"saved {m.id} ({m.duration_s:.1f} s, {m.status}) on {m.device.name}"
+                     for m in outcome.captures]
+        _print(args, {"captures": captures, "alignments": serial_alignments}, "\n".join(lines))
+        return 1 if len(outcome.captures) != len(specs) else 0
+    finally:
+        app.close_case()
+
+
 def cmd_import(args):
     app = _app(args)
     app.open_case(args.case)
@@ -461,6 +517,21 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--state", action="append", help="equipment state id=on|off")
     p.add_argument("--analyze", action="store_true")
     p.set_defaults(fn=cmd_capture)
+
+    p = sub.add_parser("capture-multi", help="record concurrently on several devices and estimate clock mappings")
+    p.add_argument("--case", required=True)
+    p.add_argument("--device", type=int, action="append", required=True,
+                   help="input device index; repeat at least twice")
+    p.add_argument("--backend", default="portaudio", choices=["portaudio", "simulated"])
+    p.add_argument("--rate", type=float, default=48000.0)
+    p.add_argument("--exclusive", action="store_true", help="WASAPI exclusive mode")
+    p.add_argument("--ch", action="append", help="channel 'idx:label[:sensor[:position[:mounting[:gain_db[:agc[:calibration]]]]]]'")
+    p.add_argument("--duration", type=float, default=15.0)
+    p.add_argument("--label")
+    p.add_argument("--state", action="append", help="equipment state id=on|off")
+    p.add_argument("--align-channel", action="append", help="alignment channel label per device, in --device order")
+    p.add_argument("--analyze", action="store_true")
+    p.set_defaults(fn=cmd_capture_multi)
 
     p = sub.add_parser("import")
     p.add_argument("--case", required=True)

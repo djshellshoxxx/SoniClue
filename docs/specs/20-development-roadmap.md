@@ -17,7 +17,7 @@
 | M10 Packaging | PyInstaller bundles, notices, SBOM, CI | Linux built and smoke-tested locally; Windows built by CI (see final report) |
 | M11 Hardware qualification | HQ-01..09 | NOT STARTED (needs hardware) |
 | M12 Real-world validation | ≥ 40 investigations, held-out evaluation | NOT STARTED (RQ-1) |
-| M13 R2 release | signed installer, AppImage, streamed long analysis, multi-device capture, rtmixer if needed | NOT STARTED |
+| M13 R2 release | signed installer, AppImage, rtmixer if profiling requires it | NOT STARTED; signing and clean-VM packaging need external setup |
 
 ## 2 Backlog (remaining work)
 

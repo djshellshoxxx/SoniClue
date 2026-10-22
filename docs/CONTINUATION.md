@@ -1,42 +1,52 @@
 # SonicClue: Continuation Record
 
-Last updated: 2026-10-12 (session 3: spec package plus full application build).
+Last updated: 2026-10-22.
 
 ## Current state
 
-* Product: **SonicClue 0.1.0**, software-complete and hardware-unqualified. Repository `djshellshoxxx/SoniClue`.
-* Delivered on branch `claude/sonicclue-v0.1.0` via a pull request into `main` (see the PR list for its number and merge state).
-* Specification package: `docs/specs/` (25 documents, 20 generated JSON Schemas, 47 contract examples, test vectors, decision register + 18 ADRs, coverage/wiring/validation/compatibility/backlog/risk/licence matrices, audit, handoff).
-* Code: `src/sonicclue/` (16 packages). Tests: 181, all passing on Linux. CI: `.github/workflows/ci.yml` (Ubuntu + Windows test and build; draft release on tag `v*`).
-* Linux bundle built locally: `SonicClue-0.1.0-linux-x64.tar.gz`, SHA-256 `3a502fcac7a46186de3710038485525c154759322b3a7042ba925f56aef6faf3` (also in the session outputs).
+* Repository: `djshellshoxxx/SoniClue`; base `main` at `6d52f5a` when this work began. Existing draft PR #12 (`claude/code-audit`) contains the preceding code-audit fixes and is the delivery branch for this session.
+* Product: SonicClue 0.1.0, software-complete for the implemented scope and hardware-unqualified. This session adds app-service and CLI support for concurrent multi-device capture, resolves four independent DSP/diagnostics review findings, and reconciles user and specification documentation.
+* Multi-device capture is exposed through `SonicClueApp.start_multi_capture` and `sonicclue-cli capture-multi`. Each device remains in its own clock domain; mappings are estimated against the first capture from shared-reference channels. Physical qualification HQ-05 remains pending.
+* Analysis supports full-length captures up to `max_analysis_seconds` (default 14,400 s); spans over 600 s spool to disk.
+* Draft PR #12 is open against the current `main`. The session changes are being added to that PR; check its Actions runs before merge.
 
-## Completed requirements
+## Verification completed locally
 
-All R1 requirements in `docs/specs/01-product-requirements.md` are implemented and tested in software, except: hardware-dependent verification (UNEXECUTED), ASIO, ML diagnosis, signed installer and licence (BLOCKED). See `docs/specs/matrices/requirement-coverage.csv`.
+* Full pytest suite: reached 100% with no failure/error markers.
+* Generated schemas: `python tools/gen_schemas.py --check` (94 contract files current).
+* Contract examples: `python docs/specs/contracts/validate_examples.py` (47/47).
+* Numerical vectors: `python tools/gen_test_vectors.py --check` (12/12).
+* Prompt embedding: `python tools/check_prompt_embedding.py` (422/422).
+* Focused tests: multi-device application persistence/alignment and startup rollback; adversarial A-B-A, invalid-quality and electrical-hum comparability cases; DSP measured-uncertainty floor; demo diagnosis and report workflow.
+* Python compilation, CLI `capture-multi` help/parser, and `git diff --check` passed.
 
-## Blockers
+## Completed software work in this session
 
-| ID | Blocker | Owner | Exit criterion |
-|---|---|---|---|
-| RISK-001 | no audio hardware: devices unqualified | owner | HQ-01..09 recorded (spec 18) |
-| DEC-009b | project licence undecided | owner | LICENSE committed |
-| DEC-009a | no code-signing certificate | owner | signed CI artifacts |
-| DEC-004b | sensor-bridge board not chosen | owner/hardware | board + firmware pass spec 06 §6 tests |
-| DEC-003a | ASIO licence | owner | agreement |
-| DEC-002 | reference machine not designated | owner | named machine; benchmarks rerun |
-| ENV-001 | CLI git push lacks credentials for this repository (credential helper scoped to a different repo name) | environment | use the GitHub API (works) or configure a token |
+* TASK-031: app-service multi-device capture startup, rollback, persistence, clock mapping, and `capture-multi` CLI.
+* TASK-042: independent review of specs 08 and 09; four findings and their corrections are recorded in `docs/specs/24-specification-audit.md`.
+* Corrected the source-evidence strength rule to count independent runs rather than evidence rows. Invalid measurement flags now surface as artifact evidence; electrical-hum chain tests verify capture quality and comparable recording conditions.
+* Documented the 0.25 dB uncertainty floor for measured repeated comparisons with zero observed variance.
 
-## Branches and PRs
+## Remaining external or manual work
 
-| Branch / PR | Disposition |
+| Item | Status / exit criterion |
 |---|---|
-| PR #1 (access test, into a throwaway base) | merged; throwaway branches `claude/access-test-base` and `claude/access-test-head` can be deleted (API tools cannot delete branches) |
-| PR #2 `claude/spec-prompt-and-handoff` | merged into `main` |
-| `claude/sonicclue-v0.1.0` | this delivery (spec package + application); see the PR list for merge state |
+| TASK-015 AppImage | Open; build and test on Ubuntu 22.04 and Fedora 40 clean VMs (depends on TASK-020). |
+| TASK-020 clean-machine install | Open; offline install and HQ-09 on clean Windows 11 and Ubuntu VMs. |
+| TASK-021 reference-machine performance | Open; owner designates reference machine and benchmarks/HQ-03 meet spec 16. |
+| TASK-022..025 hardware qualification | Blocked on physical interfaces/sensors; run HQ-02/04/05/06. |
+| TASK-026 sensor bridge | Blocked on board selection and firmware. |
+| TASK-030 ASIO | Blocked on Steinberg licensing. |
+| TASK-032 code signing | Blocked on signing certificate; CI artifacts remain unsigned. |
+| TASK-033 project licence | Owner decision required; commit selected licence. |
+| TASK-040 real-world diagnostic validation | Open; collect held-out real investigations and report accuracy/abstention. |
+| TASK-041 ML diagnosis | Blocked on TASK-040 and owner decision. |
+| TASK-043 accessibility | Open; manual NVDA/Orca walkthrough. |
 
-## Exact next actions
+The independent review covered specs 08 and 09; the broader product audit is still authored by the implementation session. Synthetic and simulated test results do not establish real-world diagnostic accuracy.
 
-1. Check the CI run for the delivery PR (Windows build artifact and smoke stage). If Windows fails, fix and re-push (TASK per spec 25).
-2. Owner: designate the reference machine; provide audio hardware; decide the licence; obtain a signing certificate.
-3. Run spec 18 HQ tests and update `docs/specs/matrices/compatibility-matrix.csv`.
-4. Continue `docs/specs/matrices/backlog.csv` in order (TASK-012 streamed analysis, TASK-042 independent review, TASK-040 real-world validation).
+## Next actions
+
+1. Confirm PR #12's Linux and Windows CI are green, then merge the verified software changes.
+2. Refresh this record with the merge commit and resulting CI runs.
+3. Continue the external/manual items above as their prerequisites become available.

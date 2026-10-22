@@ -57,4 +57,4 @@ At capture time: clipping per channel (|x| ≥ 0.999 FS), gaps and device failur
 
 ## 7 Multi-device capture
 
-Simultaneous capture from two devices in one session is **not implemented** (REQ-ACQ-014, F). Supported workflow: record on each device separately but at the same time (two SonicClue instances, or one capture per device), then align offline with `align` (spec 07). This is honest about independent clocks.
+`SonicClueApp.start_multi_capture` and the CLI `capture-multi` coordinate simultaneous capture on two or more devices (TASK-031, REQ-ACQ-014). Each device retains its own capture and clock domain. At finalization SonicClue estimates each mapping against the first device using the configured shared-reference channels; it does not assume the clocks are synchronized. Correlation, signal-quality, and ambiguity gates can leave a mapping unavailable. GUI workflow remains offline alignment in Before/after → Align (multi-device).

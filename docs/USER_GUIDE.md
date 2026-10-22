@@ -37,7 +37,7 @@ The Live screen can play sine, sweep and noise signals. Nothing plays until you 
 
 ## 6 Two devices at once
 
-Recordings from different interfaces have different clocks. Record them at the same time, then in **Before/after → Align (multi-device)** select one capture in each list and estimate the clock mapping. SonicClue allows coherence only below the frequency the timing accuracy supports, and refuses ambiguous alignments.
+Use **Before/after → Align (multi-device)** to estimate the clock mapping between existing captures. For a coordinated live session, use `sonicclue-cli capture-multi` with one `--device` option per input device; the CLI saves each capture and estimates mappings against the first device. Provide a shared acoustic or electrical reference to each device's selected alignment channel. Independent device clocks are never treated as synchronized automatically, and ambiguous or low-quality alignments are reported as unavailable.
 
 ## 7 Hardware qualification
 
@@ -70,4 +70,4 @@ sonicclue-cli report --case <id> --format pdf --out report.pdf
 
 ## 10 Known limitations
 
-See `RELEASE_NOTES.md`. In short: hardware unqualified; thresholds validated on synthetic data only; no ASIO; no simultaneous multi-device capture; analysis uses the first 10 minutes of long captures; Windows build unsigned.
+See `RELEASE_NOTES.md`. In short: hardware unqualified; diagnostic thresholds validated on synthetic data only; no ASIO; multi-device capture is available through the CLI and needs a shared reference for alignment; full analysis is supported up to 4 hours (captures over 10 minutes use disk spool); Windows build unsigned.
