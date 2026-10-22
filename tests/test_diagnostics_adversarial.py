@@ -228,6 +228,68 @@ def test_unstable_conditions_invalidate_run_evidence():
     assert any(e.params.get("code") == "unstable" for e in s.evidence if e.kind.value == "measurement_quality")
 
 
+def test_single_state_effect_needs_a_verified_aba_run_for_strong_support():
+    case = mic_contact_case()
+    rid = "run-aba-good"
+    on1 = items(2, "capon1", gen=lambda seed: tone_scene(seed=seed), state={"pc": "on"}, run=rid, step="on_1")
+    off = items(2, "capoff1", gen=lambda seed: tone_scene(fan=False, seed=seed), state={"pc": "off"}, run=rid, step="off")
+    on2 = items(1, "capon2", gen=lambda seed: tone_scene(seed=seed), state={"pc": "on"}, run=rid, step="on_2")
+    effect = compare("case-test01", on1, off, "mic", kind="state", run_id=rid)
+    stability = compare("case-test01", on1, on2, "mic", kind="generic", run_id=rid)
+    assert effect.repeatability == "measured" and stability.repeatability == "estimated"
+    assert not stability.overall_significant
+
+    # A quiet generic comparison with a matching run id is not proof that the
+    # run followed the equipment_state A-B-A procedure.
+    unverified = run_dx(case, on1 + off + on2, [effect, stability])
+    assert H(unverified, "H-SRC-pc").level is SupportLevel.SUPPORTED
+
+    run = ProcedureRun(
+        id=rid, case_id="case-test01", procedure_id="equipment_state", revision="1", params={"target": "pc"},
+        state="completed", step_index=4, repeat_index=0,
+        captures={"on_1": [i.manifest.id for i in on1], "off": [i.manifest.id for i in off],
+                  "on_2": [i.manifest.id for i in on2]},
+        started_utc=utcnow(), updated_utc=utcnow(),
+    )
+    verified = run_dx(case, on1 + off + on2, [effect, stability], [run])
+    assert H(verified, "H-SRC-pc").level is SupportLevel.STRONG
+
+
+def test_nonfinite_invalid_quality_creates_artifact_hypothesis_and_reason():
+    x = tone_scene()
+    x[100] = np.nan
+    it = analyzed_item(x, cid="capnan0001")
+    assert any(q.code.value == "nonfinite" and q.severity.value == "invalid"
+               for q in it.analysis.channels[0].quality)
+    snap = run_dx(mic_contact_case(), [it], [])
+    art = H(snap, "H-ART-quality")
+    assert art is not None and "nonfinite" in art.statement
+    assert any("measurement problems" in reason for reason in snap.abstention_reasons)
+
+
+@pytest.mark.parametrize("bad_condition", ["changed_gain", "clipping"])
+def test_chain_noise_test_rejects_changed_or_invalid_measurement_conditions(bad_condition):
+    case = mic_contact_case()
+    rid = "run-hum-bad"
+    normal_kwargs = {"cid": "capn-bad01", "run": rid, "step": "normal", "state": {"input": "connected"}}
+    terminated_kwargs = {"cid": "capt-bad01", "run": rid, "step": "terminated", "state": {"input": "terminated"}}
+    normal_signal = signals.harmonics(50.0, [0.01, 0.004, 0.003], DUR, FS)
+    terminated_signal = signals.harmonics(50.0, [0.01, 0.004, 0.003], DUR, FS)
+    if bad_condition == "changed_gain":
+        terminated_kwargs["gain"] = 32.0
+    else:
+        normal_signal = signals.clip(signals.sine(50.0, 2.0, DUR, FS))
+    normal = analyzed_item(normal_signal, **normal_kwargs)
+    terminated = analyzed_item(terminated_signal, **terminated_kwargs)
+    run = ProcedureRun(id=rid, case_id="case-test01", procedure_id="electrical_hum", revision="1", state="completed",
+                       step_index=3, repeat_index=0,
+                       captures={"normal": [normal.manifest.id], "terminated": [terminated.manifest.id]},
+                       started_utc=utcnow(), updated_utc=utcnow())
+    snap = run_dx(case, [normal, terminated], [], [run])
+    assert not any(e.kind.value == "chain_noise_test" for e in snap.evidence)
+    assert any(e.kind.value == "not_comparable" and e.valid is False for e in snap.evidence)
+
+
 def test_clipped_capture_yields_measurement_artifact_hypothesis():
     case = mic_contact_case()
     it = analyzed_item(signals.clip(signals.sine(117.0, 2.0, DUR, FS)), cid="capclip0xx")

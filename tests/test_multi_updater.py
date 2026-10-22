@@ -8,8 +8,10 @@ from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from sonicclue.acquisition.backends import SimulatedBackend
 from sonicclue.acquisition.multi import DeviceSpec, MultiCaptureSession, align_pair
 from sonicclue.acquisition.session import SessionState
+from sonicclue.app.service import CaptureSpec
 from sonicclue.app.updater import sign_manifest, verify_update
 from sonicclue.domain.errors import DeviceError, StateError, ValidationError
+from sonicclue.domain.model import ChannelConfig
 from test_acquisition import MemSink
 
 
@@ -51,6 +53,35 @@ def test_align_pair_recovers_known_delay():
     other = np.roll(ref, 240)  # 5 ms
     mapping, _flags, _res = align_pair(ref, 48000, other, 48000, ref_id="a", other_id="b")
     assert abs(abs(mapping.offset_s) - 0.005) < 2e-4
+
+
+def test_multi_capture_application_persists_and_stores_alignment(app):
+    app.create_case("multi-device integration")
+    channels = [ChannelConfig(index=0, label="mic", agc="off")]
+    specs = [CaptureSpec(channels=channels, duration_s=0.5, backend="simulated", device=0, samplerate=48000)
+             for _ in range(2)]
+    handle = app.start_multi_capture(specs)
+    outcome = handle.finalize(timeout=20)
+    assert len(outcome.captures) == 2
+    assert all(m.status == "complete" and m.source == "simulated" for m in outcome.captures)
+    assert len(app.captures()) == 2
+    assert len(outcome.alignments) == 1
+    mapping = outcome.alignments[0]["mapping"]
+    assert mapping.reference_capture_id == outcome.captures[0].id
+    assert mapping.other_capture_id == outcome.captures[1].id
+    assert app.store.get("clock_mapping", mapping.id) is not None
+
+
+def test_multi_capture_start_failure_discards_prepared_streams(app):
+    app.create_case("multi-device startup rollback")
+    valid = CaptureSpec(channels=[ChannelConfig(index=0, label="mic")], duration_s=3,
+                        backend="simulated", device=0, samplerate=48000)
+    invalid = CaptureSpec(channels=[ChannelConfig(index=i, label=f"ch{i}") for i in range(4)], duration_s=3,
+                          backend="simulated", device=0, samplerate=48000)
+    with pytest.raises(DeviceError):
+        app.start_multi_capture([valid, invalid])
+    assert app.captures() == []
+    assert list((app.store.path / "captures").iterdir()) == []
 
 
 def _bundle(tmp_path, version="0.2.0"):

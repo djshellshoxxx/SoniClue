@@ -26,6 +26,7 @@ import numpy as np
 from .. import BUILD_ID, __version__, procedures
 from ..acquisition import importer
 from ..acquisition.backends import PortAudioBackend, SimulatedBackend, SimWorld
+from ..acquisition.multi import MultiCaptureSession
 from ..acquisition.session import CaptureSession, SessionState
 from ..analysis.pipeline import analyze as run_analysis
 from ..analysis.spool import ChannelSpool
@@ -60,7 +61,7 @@ from ..reporting.builder import ReportInputs, build_report
 from ..sensors import calibration as cal
 from ..stimulus import OutputController
 from ..storage.archive import export_case, import_case
-from ..storage.files import atomic_write_text, make_readonly, sha256_file
+from ..storage.files import atomic_write_text, make_readonly, rmtree_force, sha256_file
 from ..storage.store import CaseStore, Workspace, new_id
 from .jobs import JobRunner
 
@@ -125,12 +126,7 @@ class CaptureHandle:
         self._finalized = True
         cdir = self.store.capture_dir(self.id)
         if oc.state is SessionState.CANCELLED:
-            for f in cdir.rglob("*"):
-                try:
-                    os.chmod(f, 0o666)
-                except OSError:
-                    pass
-            shutil.rmtree(cdir, ignore_errors=True)
+            rmtree_force(cdir)
             self.store.audit("capture.cancel", self.id, "discarded by user")
             return None
         if oc.frames == 0:
@@ -148,6 +144,67 @@ class CaptureHandle:
                                                  oc.chunks, oc.gaps, flags, status, self.stimulus_played)
         self.store.save_capture(self.manifest)
         return self.manifest
+
+
+@dataclass
+class MultiCaptureOutcome:
+    """Completed captures and their estimated clock mappings (one per secondary device)."""
+
+    captures: list[CaptureManifest]
+    alignments: list[dict]
+
+
+class MultiCaptureHandle:
+    """Own several live capture handles and align them after persistence."""
+
+    def __init__(self, app: "SonicClueApp", handles: list[CaptureHandle], alignment_channels: list[str]):
+        self.app, self.handles, self.alignment_channels = app, handles, alignment_channels
+        self._outcome: MultiCaptureOutcome | None = None
+
+    @property
+    def states(self) -> dict[str, SessionState]:
+        return {h.id: h.state for h in self.handles}
+
+    def stop(self) -> None:
+        for handle in self.handles:
+            handle.session.stop()
+
+    def cancel(self) -> None:
+        for handle in self.handles:
+            handle.session.cancel()
+
+    def finalize(self, timeout: float | None = None) -> MultiCaptureOutcome:
+        """Persist each stream, then estimate each secondary clock against the first.
+
+        Alignment errors do not discard valid recordings. They are returned inline
+        as an error record so users retain the capture and can retry with another
+        reference channel or use independent spectral analyses.
+        """
+        if self._outcome is not None:
+            return self._outcome
+        import time
+
+        deadline = None if timeout is None else time.monotonic() + timeout
+        manifests: list[CaptureManifest] = []
+        for handle in self.handles:
+            remaining = None if deadline is None else max(0.0, deadline - time.monotonic())
+            manifest = handle.finalize(timeout=remaining)
+            if manifest is not None:
+                manifests.append(manifest)
+        alignments: list[dict] = []
+        if len(manifests) == len(self.handles) and all(m.status == "complete" for m in manifests):
+            reference = manifests[0]
+            for other, ref_label, other_label in zip(manifests[1:], self.alignment_channels[:1],
+                                                     self.alignment_channels[1:]):
+                try:
+                    result = self.app.align_captures(reference.id, other.id, ref_label, other_label)
+                    alignments.append({"reference_capture_id": reference.id, "other_capture_id": other.id,
+                                       **result})
+                except Exception as exc:  # noqa: BLE001 - preserve saved recordings if alignment cannot be estimated
+                    alignments.append({"reference_capture_id": reference.id, "other_capture_id": other.id,
+                                       "error": str(exc)})
+        self._outcome = MultiCaptureOutcome(captures=manifests, alignments=alignments)
+        return self._outcome
 
 
 class SonicClueApp:
@@ -295,7 +352,8 @@ class SonicClueApp:
         if len(set(labels)) != len(labels):
             raise ValidationError("channel labels must be unique")
 
-    def start_capture(self, spec: CaptureSpec) -> CaptureHandle:
+    def _prepare_capture(self, spec: CaptureSpec) -> CaptureHandle:
+        """Validate and journal a capture without opening its device stream."""
         store = self._s()
         self._validate_channels(spec.channels)
         if spec.duration_s <= 0 or spec.duration_s > 4 * 3600:
@@ -326,23 +384,73 @@ class SonicClueApp:
             hdr.pop(k, None)
         writer.header = hdr
         writer._journal()
+        return handle
+
+    def start_capture(self, spec: CaptureSpec) -> CaptureHandle:
+        handle = self._prepare_capture(spec)
         try:
-            sess.start()
+            handle.session.start()
         except Exception:
-            shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
+            shutil.rmtree(handle.store.capture_dir(handle.id), ignore_errors=True)
             raise
         if spec.stimulus is not None:
             try:
                 handle.stimulus_played = self.output.play(spec.stimulus, spec.duration_s)
             except BaseException:
-                sess.cancel()
+                handle.session.cancel()
                 try:
-                    sess.wait(timeout=15)
+                    handle.session.wait(timeout=15)
                 except Exception:  # noqa: BLE001
                     pass
-                shutil.rmtree(store.capture_dir(cid), ignore_errors=True)
+                shutil.rmtree(handle.store.capture_dir(handle.id), ignore_errors=True)
                 raise
         return handle
+
+    def start_multi_capture(self, specs: list[CaptureSpec], *, alignment_channels: list[str] | None = None) -> MultiCaptureHandle:
+        """Start 2+ device streams as one all-or-nothing session.
+
+        Each device gets its own manifest and clock domain. After finalization the
+        first device is the reference; its configured channel is aligned with the
+        corresponding channel on each other device. Correlation gates determine
+        whether the resulting mappings permit synchronized analysis.
+        """
+        if len(specs) < 2:
+            raise ValidationError("multi-device capture requires at least two device specifications")
+        durations = [s.duration_s for s in specs]
+        if any(d <= 0 or d > 4 * 3600 for d in durations):
+            raise ValidationError("duration must be between 0 and 4 hours")
+        if max(durations) - min(durations) > 1e-9:
+            raise ValidationError("all devices in a multi-device session must use the same duration")
+        if any(s.stimulus is not None for s in specs):
+            raise ValidationError("multi-device capture cannot start test-signal output")
+        if alignment_channels is None:
+            alignment_channels = [s.channels[0].label if s.channels else "" for s in specs]
+        if len(alignment_channels) != len(specs) or any(not x for x in alignment_channels):
+            raise ValidationError("provide one valid alignment channel label per device")
+
+        handles: list[CaptureHandle] = []
+        try:
+            for spec, label in zip(specs, alignment_channels):
+                if not any(c.label == label for c in spec.channels):
+                    raise ValidationError(f"alignment channel {label!r} is not in that device's channel list")
+                handles.append(self._prepare_capture(spec))
+            coordinator = MultiCaptureSession.from_sessions({h.id: h.session for h in handles})
+            coordinator.start()
+        except Exception:
+            # MultiCaptureSession.start cancels and drains streams already started.
+            # Remove every prepared folder, including writers belonging to streams
+            # which never reached RUNNING, so startup is atomic from the case view.
+            for handle in handles:
+                try:
+                    if handle.state not in (SessionState.CANCELLED, SessionState.COMPLETED,
+                                            SessionState.FAILED, SessionState.IDLE):
+                        handle.session.cancel()
+                        handle.session.wait(timeout=10)
+                except Exception:  # noqa: BLE001 - preserve original startup error
+                    pass
+                shutil.rmtree(handle.store.capture_dir(handle.id), ignore_errors=True)
+            raise
+        return MultiCaptureHandle(self, handles, list(alignment_channels))
 
     def capture_blocking(self, spec: CaptureSpec, timeout_extra: float = 30.0) -> CaptureManifest | None:
         h = self.start_capture(spec)

@@ -10,6 +10,7 @@ error is re-raised, so no half-started session is left running.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 
 import numpy as np
@@ -18,7 +19,7 @@ from ..domain.errors import DeviceError, StateError
 from ..domain.model import ClockMapping, QualityFlag
 from ..sync import estimate_mapping
 from .backends import AudioBackend
-from .session import CaptureOutcome, CaptureSession, CaptureSink
+from .session import CaptureOutcome, CaptureSession, CaptureSink, SessionState
 
 
 @dataclass
@@ -43,22 +44,52 @@ class MultiCaptureSession:
                                                 duration_s=duration_s, blocksize=s.blocksize) for s in specs}
         self._started = False
 
+    @classmethod
+    def from_sessions(cls, sessions: dict[str, CaptureSession]) -> "MultiCaptureSession":
+        """Coordinate sessions whose sinks and metadata were prepared by an app service."""
+        if len(sessions) < 2:
+            raise StateError("multi-device capture needs at least two devices")
+        if any(not name for name in sessions):
+            raise StateError("device names must be non-empty")
+        obj = cls.__new__(cls)
+        obj.sessions = dict(sessions)
+        obj._started = False
+        return obj
+
     def start(self) -> None:
         if self._started:
             raise StateError("multi-device session already started")
         self._started = True
-        began: list[CaptureSession] = []
-        try:
-            for s in self.sessions.values():
-                s.start()
-                began.append(s)
-        except Exception as exc:  # noqa: BLE001
-            for s in began:
-                s.cancel()
-            for s in began:
-                s.wait(timeout=10)
+        failures: list[Exception] = []
+        failure_lock = threading.Lock()
+
+        def start_one(session: CaptureSession) -> None:
+            try:
+                session.start()
+            except Exception as exc:  # noqa: BLE001 - gather failures before rollback
+                with failure_lock:
+                    failures.append(exc)
+
+        starters = [threading.Thread(target=start_one, args=(session,), name="multi-device-start", daemon=True)
+                    for session in self.sessions.values()]
+        for starter in starters:
+            starter.start()
+        for starter in starters:
+            starter.join()
+        if failures:
+            for session in self.sessions.values():
+                if session.state not in (SessionState.IDLE, SessionState.CANCELLED, SessionState.COMPLETED,
+                                         SessionState.FAILED):
+                    session.cancel()
+            for session in self.sessions.values():
+                if session.state is not SessionState.IDLE:
+                    try:
+                        session.wait(timeout=10)
+                    except Exception:  # noqa: BLE001 - retain the initiating error
+                        pass
+            exc = failures[0]
             if isinstance(exc, DeviceError):
-                raise
+                raise exc
             raise DeviceError(f"multi-device start failed: {exc}") from exc
 
     def stop(self) -> None:

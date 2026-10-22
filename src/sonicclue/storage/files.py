@@ -14,6 +14,27 @@ import tempfile
 from pathlib import Path
 
 
+def rmtree_force(path: Path) -> None:
+    """Remove a tree even if parts were made read-only (needed on Windows, and for 0o444 files in 0o555 dirs on POSIX)."""
+    import shutil
+    for root, dirs, files in os.walk(path):
+        for name in dirs:
+            try:
+                os.chmod(os.path.join(root, name), 0o700)
+            except OSError:
+                pass
+        for name in files:
+            try:
+                os.chmod(os.path.join(root, name), 0o600)
+            except OSError:
+                pass
+    try:
+        os.chmod(path, 0o700)
+    except OSError:
+        pass
+    shutil.rmtree(path, ignore_errors=False)
+
+
 def sha256_file(path: Path, bufsize: int = 1 << 20) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:

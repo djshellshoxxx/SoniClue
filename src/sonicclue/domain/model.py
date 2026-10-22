@@ -860,7 +860,7 @@ class ArchiveEntry(Contract):
 
 class ArchiveManifest(Document):
     format: Literal["sonicclue-case-archive"] = "sonicclue-case-archive"
-    case_id: str
+    case_id: str = Field(pattern=r"^[A-Za-z0-9_\-]{6,64}$")
     created_utc: datetime
     software_version: str
     entries: list[ArchiveEntry] = Field(max_length=200000)

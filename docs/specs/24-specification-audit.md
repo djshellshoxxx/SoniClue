@@ -1,6 +1,6 @@
 # 24 Specification audit
 
-Audit date 2026-10-12, performed by the coordinator session that also wrote the code. **Independence limitation (RISK-014):** no separate reviewing agent was available in this environment, so the audits below are self-audits backed by automated tests and counterexamples. An independent review of specs 08 and 09 is backlog TASK-042.
+Audit date 2026-10-22. The original audits below were performed by the implementation session. A separate review of specs 08 and 09 was completed for TASK-042 on 2026-10-22; findings and fixes are listed in section 4. Synthetic tests still do not establish real-world diagnostic accuracy (TASK-040).
 
 Finding format: ID → severity → affected requirement → evidence → impact → correction → verification.
 
@@ -55,9 +55,20 @@ Finding format: ID → severity → affected requirement → evidence → impact
 |---|---|---|---|
 | O-01 | High | no hardware qualification | BLOCKED (RISK-001; TASK-022..025) |
 | O-02 | High | thresholds validated on synthetic data only | VALIDATION_REQUIRED (TASK-040) |
-| O-03 | Med | self-audit only | TASK-042 |
+| O-03 | Med | the original broader specification audit was performed by the implementation session; specs 08 and 09 received separate review | PARTIALLY RESOLVED (TASK-042); broader independent audit remains unperformed |
 | O-04 | Med | Windows bundle verified only through CI | see final report; TASK-020 |
-| O-05 | Med | analysis limited to the first 600 s by default | TASK-012 |
+| O-05 | Med | long analyses require local spool disk space above 600 s | TASK-012 done; see spec 16 §5 |
+
+## 4 TASK-042 independent review (2026-10-22)
+
+An independent reviewer checked specs 08 and 09 against diagnostic and comparison code and added adversarial tests.
+
+| Finding | Severity | Issue | Correction and verification |
+|---|---|---|---|
+| R-01 | High | An insignificant generic comparison carrying a procedure run ID could count as an ABA stability check without a completed equipment-state A-B-A run. | Require a completed `equipment_state` run, all three captured steps, matching run/step IDs, the same target state sequence, and unchanged other equipment; adversarial test distinguishes a one-state effect from verified ABA evidence. |
+| R-02 | High | Invalid quality flags outside clipping, silence, AGC and calibration mismatch could fail to generate artifact evidence and abstention reasons. | Surface every invalid quality flag as measurement-quality evidence; test non-finite samples. |
+| R-03 | Medium | Electrical-hum chain-noise inference did not verify gain and measurement validity across connected/terminated captures. | Check comparability before inference; changed gain or clipping creates NOT COMPARABLE evidence and no chain-noise claim. |
+| R-04 | Low | Repeated measured comparisons with zero observed variance could report zero uncertainty. | Document and test the 0.25 dB `u95` floor. |
 | O-06 | Low | no screen-reader test | TASK-043 |
 | O-07 | Med | Python callback allocation on slow machines | RISK-004, TASK-021 |
 | O-08 | Low | very long spectrograms skip samples between frames (display only) | documented in spec 08 |

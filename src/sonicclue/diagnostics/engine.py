@@ -30,6 +30,7 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from ..compare import comparability
 from ..domain.model import (
     ACOUSTIC_KINDS,
     SUPPORT_ORDER,
@@ -38,6 +39,7 @@ from ..domain.model import (
     CaptureManifest,
     Case,
     ComparisonResult,
+    ComparabilityIssue,
     DiagnosisSnapshot,
     EvidenceItem,
     EvidenceKind,
@@ -75,7 +77,7 @@ class DiagnosticInputs:
 
 
 def _eid(kind: str, *parts) -> str:
-    h = hashlib.sha1("|".join([kind, *map(str, parts)]).encode()).hexdigest()[:10]
+    h = hashlib.sha1("|".join([kind, *map(str, parts)]).encode(), usedforsecurity=False).hexdigest()[:10]
     return f"ev-{kind[:6]}-{h}"
 
 
@@ -127,11 +129,10 @@ def _extract_measurements(cx: _Ctx) -> list[tuple[float, str]]:
         for ch in an.channels:
             invalid = [q for q in ch.quality if q.severity is Severity.INVALID]
             for q in invalid:
-                if q.code.value in ("clipping", "agc_active", "silence", "cal_gain_mismatch"):
-                    cx.add(id=_eid("mq", cv.manifest.id, ch.label, q.code.value), kind=EvidenceKind.MEASUREMENT_QUALITY,
-                           statement_class=StatementClass.MEASURED,
-                           summary=f"Capture '{cv.manifest.context.condition_label or cv.manifest.id}', {ch.label}: {q.message}",
-                           params={"code": q.code.value}, sources=[cv.manifest.id, an.id], channel_label=ch.label, valid=True)
+                cx.add(id=_eid("mq", cv.manifest.id, ch.label, q.code.value), kind=EvidenceKind.MEASUREMENT_QUALITY,
+                       statement_class=StatementClass.MEASURED,
+                       summary=f"Capture '{cv.manifest.context.condition_label or cv.manifest.id}', {ch.label}: {q.message}",
+                       params={"code": q.code.value}, sources=[cv.manifest.id, an.id], channel_label=ch.label, valid=True)
             if any(q.code.value in ("clipping", "silence") for q in invalid):
                 continue
             for pk in ch.peaks:
@@ -203,11 +204,53 @@ def _off_direction(sa: str, sb: str) -> int:
     return 0
 
 
+def _verified_aba_stability(cx: _Ctx, comparison: ComparisonResult) -> bool:
+    """Return true only for an insignificant comparison of on_1 vs on_2
+    captures in a completed equipment_state run whose captured states are
+    actually ON/OFF/ON for one target with no other state changes.
+
+    A run ID and a quiet generic comparison alone do not prove an ABA check.
+    """
+    run_id = comparison.procedure_run_id
+    if not run_id or comparison.kind != "generic" or comparison.overall_significant:
+        return False
+    run = cx.runs.get(run_id)
+    if not run or run.state != "completed" or run.procedure_id != "equipment_state":
+        return False
+    target = run.params.get("target")
+    steps = {key: run.captures.get(key, []) for key in ("on_1", "off", "on_2")}
+    if not target or any(not ids for ids in steps.values()):
+        return False
+    if not set(comparison.captures_a) <= set(steps["on_1"]):
+        return False
+    if not set(comparison.captures_b) <= set(steps["on_2"]):
+        return False
+    if not comparison.captures_a or not comparison.captures_b:
+        return False
+
+    expected = {"on_1": "on", "off": "off", "on_2": "on"}
+    baseline_other_state: dict[str, str] | None = None
+    for step, ids in steps.items():
+        for capture_id in ids:
+            cv = cx.caps.get(capture_id)
+            if cv is None or cv.manifest.context.procedure_run_id != run_id \
+                    or cv.manifest.context.procedure_step != step:
+                return False
+            state = cv.manifest.context.equipment_state
+            if state.get(target) != expected[step]:
+                return False
+            other_state = {key: value for key, value in state.items() if key != target}
+            if baseline_other_state is None:
+                baseline_other_state = other_state
+            elif other_state != baseline_other_state:
+                return False
+    return True
+
+
 def _extract_comparisons(cx: _Ctx) -> None:
     unstable_runs = set()
     for c in cx.inp.comparisons:
-        if c.kind == "generic" and c.comparable and not c.changed_equipment and c.intervention is None and c.procedure_run_id \
-                and not c.overall_significant:
+        if c.comparable and not c.changed_equipment and c.intervention is None and _verified_aba_stability(cx, c):
             cx.stable_runs.add(c.procedure_run_id)
     for c in cx.inp.comparisons:
         if c.kind == "generic" and c.comparable and not c.changed_equipment and c.intervention is None and c.overall_significant:
@@ -326,17 +369,51 @@ def _extract_procedures(cx: _Ctx, tones: list[tuple[float, str]]) -> None:
             if not (a and b):
                 continue
             ac = lambda lab: cx.is_acoustic(a.manifest, lab)  # noqa: E731
-            pb = _peaks(b, ac)
-            for lab, pk in _peaks(a, ac):
-                if pk.prominence_db < 10:
+            acoustic_labels = [ch.label for ch in a.analysis.channels if ac(ch.label)]
+            for lab in acoustic_labels:
+                issues = comparability.check(a.manifest, b.manifest, lab, a.analysis, b.analysis)
+                ca = next((ch for ch in a.manifest.channels if ch.label == lab), None)
+                cb = next((ch for ch in b.manifest.channels if ch.label == lab), None)
+                # The chain test specifically assumes the same recording chain
+                # and unchanged gain while the mic is disconnected. A changed
+                # device or an unknown/changed gain therefore invalidates this
+                # procedure even where a generic comparison would only caveat it.
+                if ca is None or cb is None or ca.input_gain_db is None or cb.input_gain_db is None \
+                        or abs(ca.input_gain_db - cb.input_gain_db) > 0.1:
+                    issues.append(ComparabilityIssue(field="input_gain_db",
+                        a=str(ca.input_gain_db if ca else None), b=str(cb.input_gain_db if cb else None),
+                        effect="invalidates", message="input gain must be recorded and unchanged for the chain-noise test"))
+                if a.manifest.device.name != b.manifest.device.name:
+                    issues.append(ComparabilityIssue(field="device", a=a.manifest.device.name, b=b.manifest.device.name,
+                        effect="invalidates", message="recording device changed during the chain-noise test"))
+                for cv in (a, b):
+                    chn = next((ch for ch in cv.analysis.channels if ch.label == lab), None)
+                    if chn:
+                        invalid = [q for q in chn.quality if q.severity is Severity.INVALID]
+                        if invalid:
+                            issues.append(ComparabilityIssue(field="quality", a=cv.manifest.id, b=invalid[0].code.value,
+                                effect="invalidates", message=f"capture {cv.manifest.id}: {invalid[0].message}"))
+                issues = comparability.merge(issues)
+                blockers = [issue for issue in issues if issue.effect == "invalidates"]
+                if blockers:
+                    cx.add(id=_eid("chain-nc", run.id, lab), kind=EvidenceKind.NOT_COMPARABLE,
+                           statement_class=StatementClass.CALCULATED,
+                           summary=f"Electrical-hum captures for {lab} cannot be compared: "
+                                   + "; ".join(issue.message for issue in blockers)[:400],
+                           sources=[a.manifest.id, b.manifest.id], valid=False)
                     continue
-                persists = any(_same_f(pk.freq_hz, q.freq_hz) and q.prominence_db >= 6 for _, q in pb)
-                cx.add(id=_eid("chain", run.id, round(pk.freq_hz, 1)), kind=EvidenceKind.CHAIN_NOISE_TEST,
-                       statement_class=StatementClass.MEASURED,
-                       summary=f"Tone {pk.freq_hz:.1f} Hz " + ("is STILL present" if persists else "disappears")
-                               + " with the microphone disconnected" + (" (generated in the recording chain)" if persists else
-                                                                        " (it comes through the microphone)"),
-                       params={"persists": persists}, sources=[a.manifest.id, b.manifest.id], channel_label=lab, freq_hz=pk.freq_hz)
+                normal_peaks = [pk for name, pk in _peaks(a, ac) if name == lab]
+                terminated_peaks = [pk for name, pk in _peaks(b, lambda label: label == lab) if name == lab]
+                for pk in normal_peaks:
+                    if pk.prominence_db < 10:
+                        continue
+                    persists = any(_same_f(pk.freq_hz, q.freq_hz) and q.prominence_db >= 6 for q in terminated_peaks)
+                    cx.add(id=_eid("chain", run.id, lab, round(pk.freq_hz, 1)), kind=EvidenceKind.CHAIN_NOISE_TEST,
+                           statement_class=StatementClass.MEASURED,
+                           summary=f"Tone {pk.freq_hz:.1f} Hz " + ("is STILL present" if persists else "disappears")
+                                   + " with the microphone disconnected" + (" (generated in the recording chain)" if persists else
+                                                                            " (it comes through the microphone)"),
+                           params={"persists": persists}, sources=[a.manifest.id, b.manifest.id], channel_label=lab, freq_hz=pk.freq_hz)
         elif pid == "alias_check":
             a, b = first("rate_a"), first("rate_b")
             if not (a and b):
@@ -478,7 +555,11 @@ def _rules(cx: _Ctx, tones) -> list[Hypothesis]:
         # Strong = two independent experiments, or one experiment with measured
         # repeatability whose A-B-A stability check passed.
         stable_measured = any(e.params.get("repeatability") == "measured" and e.params.get("run") in cx.stable_runs for e in sup)
-        strong = len(comps) + (1 if stable_measured else 0)
+        # Count independent runs, not evidence rows (one run may produce an
+        # overall effect and several tone effects). A measured repeatability
+        # check can make one completed run strong; otherwise two distinct runs
+        # are required.
+        strong = 2 if len(comps) >= 2 or stable_measured else 0
         lvl = _level(len(comps), strong, len(con_runs))
         freqs = sorted({round(e.freq_hz, 1) for e in sup if e.freq_hz})
         expl = []

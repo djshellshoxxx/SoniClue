@@ -6,10 +6,10 @@ RISK-004,Python callback dropouts,risk,M,H,acquisition,bounded queue + gaps; rtm
 RISK-005,Thresholds synthetic-only,risk,H,H,diagnostics,abstention; held-out protocol,TASK-040,evaluation reported,OPEN
 RISK-006,Windows AGC/enhancements,risk,M,H,product,AGC gating; exclusive mode; guidance,TASK-022,documented HQ-02,MITIGATED (software)
 RISK-007,Contact pickup misread as calibrated,risk,M,M,product,relative-only; airborne control,-,-,MITIGATED
-RISK-008,Long-capture memory,risk,M,M,dsp,block-wise; 600 s default,TASK-012,streamed analysis,PARTIALLY MITIGATED
+RISK-008,Long-capture memory,risk,M,M,dsp,block-wise; streamed analysis above 600 s,TASK-012,streamed analysis,DONE (validated in software; benchmark record uses build VM)
 RISK-009,LGPL compliance,risk,L,H,release,onedir; notices; source offer,-,legal review,MITIGATED (pending review)
 RISK-010,Room modes mislead location surveys,risk,M,M,diagnostics,stated in texts,-,-,ACCEPTED
 RISK-011,Bridge board not selected,risk,H,L,hardware,protocol ready,TASK-026,board chosen,OPEN
 RISK-012,Competitive claims inaccurate,risk,M,M,product,no uniqueness claims,-,review recorded,OPEN
 RISK-013,Windows build verified only via CI,risk,M,M,release,CI smoke stage,TASK-020,CI green + HQ-09,SEE FINAL REPORT
-RISK-014,Spec and code by same session,risk,M,M,coordinator,independent review,TASK-042,review recorded,OPEN
+RISK-014,Spec and code by same session,risk,M,M,coordinator,independent review of specs 08 and 09,TASK-042,review recorded,PARTIALLY MITIGATED (broader product audit still coordinator-authored)

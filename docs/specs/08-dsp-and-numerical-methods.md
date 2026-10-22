@@ -74,7 +74,7 @@ Floating-point tolerances are listed per test (rtol/atol) and justified by the a
 
 ## 6 Comparison statistics (section 9 of master prompt 4.3, "statistical repeatability")
 
-Delta = mean(B) - mean(A) in dB. With ≥ 2 captures per side: 95% Welch-Satterthwaite t-interval on per-capture levels ("measured"). With one per side: 2·sqrt(sd_a² + sd_b²), where sd = 4.343/sqrt(n_eff·B) for a band of B effective bins, floored at 0.5 dB ("estimated"). Tone sd = max(0.1, 4.343·2·sqrt(Pn/Pt)/sqrt(n_eff)). Significant only if |delta| > max(u95, 1 dB minimum practical effect).
+Delta = mean(B) - mean(A) in dB. With ≥ 2 captures per side: 95% Welch-Satterthwaite t-interval on per-capture levels ("measured"), with `u95` floored at 0.25 dB so zero-variance repeated samples do not imply perfect measurement certainty. With one per side: 2·sqrt(sd_a² + sd_b²), where sd = 4.343/sqrt(n_eff·B) for a band of B effective bins, floored at 0.5 dB ("estimated"). Tone sd = max(0.1, 4.343·2·sqrt(Pn/Pt)/sqrt(n_eff)). Significant only if |delta| > max(u95, 1 dB minimum practical effect).
 
 ## 7 Computational cost (measured, spec 16)
 

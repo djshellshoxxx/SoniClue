@@ -251,3 +251,22 @@ def test_analysis_preserves_original_single_channel_capture(tmp_path):
     analyze(manifest, data, {}, {})
     np.testing.assert_array_equal(data, original, strict=True)
     st.close()
+
+
+def test_case_path_rejects_traversal(tmp_path):
+    ws = Workspace(tmp_path)
+    for bad in ("../x", "a/b", "", "..", "x" * 65):
+        with pytest.raises(StorageError):
+            ws.case_path(bad)
+
+
+def test_rmtree_force_removes_readonly_tree(tmp_path):
+    import os
+    from sonicclue.storage.files import rmtree_force
+    d = tmp_path / "t" / "sub"
+    d.mkdir(parents=True)
+    (d / "f").write_text("x")
+    os.chmod(d / "f", 0o444)
+    os.chmod(d, 0o555)
+    rmtree_force(tmp_path / "t")
+    assert not (tmp_path / "t").exists()
