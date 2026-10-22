@@ -4,11 +4,11 @@ Last updated: 2026-10-22.
 
 ## Current state
 
-* Repository: `djshellshoxxx/SoniClue`; base `main` at `6d52f5a` when this work began. Existing draft PR #12 (`claude/code-audit`) contains the preceding code-audit fixes and is the delivery branch for this session.
+* Repository: `djshellshoxxx/SoniClue`; base `main` at `6d52f5a` when this work began. PR #12 (`claude/code-audit`) was merged into `main` as `9cbec5a` on 2026-10-22.
 * Product: SonicClue 0.1.0, software-complete for the implemented scope and hardware-unqualified. This session adds app-service and CLI support for concurrent multi-device capture, resolves four independent DSP/diagnostics review findings, and reconciles user and specification documentation.
 * Multi-device capture is exposed through `SonicClueApp.start_multi_capture` and `sonicclue-cli capture-multi`. Each device remains in its own clock domain; mappings are estimated against the first capture from shared-reference channels. Physical qualification HQ-05 remains pending.
 * Analysis supports full-length captures up to `max_analysis_seconds` (default 14,400 s); spans over 600 s spool to disk.
-* Draft PR #12 is open against the current `main`. The session changes are being added to that PR; check its Actions runs before merge.
+* PR #12 is merged. CI run #45 passed Linux and Windows tests plus Linux and Windows standalone bundle build/smoke-test jobs.
 
 ## Verification completed locally
 
@@ -18,7 +18,7 @@ Last updated: 2026-10-22.
 * Numerical vectors: `python tools/gen_test_vectors.py --check` (12/12).
 * Prompt embedding: `python tools/check_prompt_embedding.py` (422/422).
 * Focused tests: multi-device application persistence/alignment and startup rollback; adversarial A-B-A, invalid-quality and electrical-hum comparability cases; DSP measured-uncertainty floor; demo diagnosis and report workflow.
-* Python compilation, CLI `capture-multi` help/parser, and `git diff --check` passed.
+* Python compilation, CLI `capture-multi` help/parser, and `git diff --check` passed. Linux and Windows standalone bundle builds and clean-environment smoke tests passed in CI run #45.
 
 ## Completed software work in this session
 
@@ -47,6 +47,4 @@ The independent review covered specs 08 and 09; the broader product audit is sti
 
 ## Next actions
 
-1. Confirm PR #12's Linux and Windows CI are green, then merge the verified software changes.
-2. Refresh this record with the merge commit and resulting CI runs.
-3. Continue the external/manual items above as their prerequisites become available.
+1. Continue the external/manual items above as their prerequisites become available; hardware, owner decisions, clean VMs, and real-world datasets are required for the remaining qualifications.
