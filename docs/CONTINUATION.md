@@ -1,6 +1,8 @@
 # SonicClue: Continuation Record
 
-Last updated: 2026-10-22.
+Latest source verification and fixes: [Delivery coordination](DELIVERY_STATUS.md).
+
+Historical continuation record last updated: 2026-10-22.
 
 ## Current state
 
