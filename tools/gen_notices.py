@@ -14,13 +14,19 @@ from pathlib import Path
 RUNTIME = ["numpy", "scipy", "pydantic", "pydantic-core", "annotated-types", "typing-extensions", "typing-inspection", "soundfile",
            "sounddevice", "cffi", "pycparser", "matplotlib", "contourpy", "cycler", "fonttools", "kiwisolver", "packaging", "pillow",
            "pyparsing", "python-dateutil", "six", "reportlab", "charset-normalizer", "PySide6", "PySide6-Essentials", "shiboken6",
-           "pyqtgraph"]
+           "PySide6-Addons", "pyqtgraph", "cryptography"]
 EXTRA = [
     ("PortAudio", "bundled in sounddevice", "MIT-style (PortAudio licence)", "http://www.portaudio.com"),
     ("libsndfile", "bundled in soundfile", "LGPL-2.1-or-later (dynamically linked, replaceable)", "https://github.com/libsndfile/libsndfile"),
     ("Qt", "6.x bundled in PySide6", "LGPL-3.0 (dynamically linked, replaceable)", "https://download.qt.io/official_releases/qt/"),
     ("CPython", sys.version.split()[0], "PSF-2.0", "https://www.python.org"),
 ]
+if sys.platform.startswith("linux"):
+    EXTRA += [
+        ("GLib", "build-host shared library", "LGPL-2.1-or-later (dynamically linked, replaceable)", "https://gitlab.gnome.org/GNOME/glib"),
+        ("libglvnd", "build-host shared libraries", "MIT", "https://github.com/NVIDIA/libglvnd"),
+        ("ALSA configuration data", "build-host data", "see _internal/alsa/copyright", "https://github.com/alsa-project/alsa-lib"),
+    ]
 
 
 def lic(d) -> str:
@@ -32,6 +38,17 @@ def lic(d) -> str:
     return s
 
 
+def runtime_versions() -> dict[str, str]:
+    """Installed runtime versions shared by notices, SBOM and build provenance."""
+    versions = {}
+    for name in RUNTIME:
+        try:
+            versions[name] = md.version(name)
+        except md.PackageNotFoundError:
+            continue
+    return versions
+
+
 def main(out: Path) -> None:
     out.mkdir(parents=True, exist_ok=True)
     comps, lines = [], ["# Third-party notices", "", "SonicClue bundles the following components. Licence texts are included below where the",
@@ -39,11 +56,8 @@ def main(out: Path) -> None:
                         "source code is available from the upstream URLs listed (written offer: contact Circuit Drift Labs for a copy).", ""]
     lines += ["| Component | Version | Licence | Source |", "|---|---|---|---|"]
     texts = []
-    for name in RUNTIME:
-        try:
-            d = md.distribution(name)
-        except md.PackageNotFoundError:
-            continue
+    for name in runtime_versions():
+        d = md.distribution(name)
         url = d.metadata.get("Home-page") or next((u.split(",", 1)[1].strip() for u in (d.metadata.get_all("Project-URL") or [])), "")
         comps.append({"type": "library", "name": name, "version": d.version, "licenses": [lic(d)], "purl": f"pkg:pypi/{name.lower()}@{d.version}"})
         lines.append(f"| {name} | {d.version} | {lic(d)} | {url} |")

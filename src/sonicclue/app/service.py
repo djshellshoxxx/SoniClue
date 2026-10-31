@@ -194,8 +194,8 @@ class MultiCaptureHandle:
         alignments: list[dict] = []
         if len(manifests) == len(self.handles) and all(m.status == "complete" for m in manifests):
             reference = manifests[0]
-            for other, ref_label, other_label in zip(manifests[1:], self.alignment_channels[:1],
-                                                     self.alignment_channels[1:]):
+            ref_label = self.alignment_channels[0]
+            for other, other_label in zip(manifests[1:], self.alignment_channels[1:]):
                 try:
                     result = self.app.align_captures(reference.id, other.id, ref_label, other_label)
                     alignments.append({"reference_capture_id": reference.id, "other_capture_id": other.id,
