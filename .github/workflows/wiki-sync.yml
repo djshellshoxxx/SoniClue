@@ -1,0 +1,45 @@
+name: Wiki sync
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "docs/wiki/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Clone wiki repo
+        id: wiki
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git clone "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.wiki.git" "$RUNNER_TEMP/wiki"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Wiki repo for ${{ github.repository }} does not exist yet. Open the repo's Wiki tab and save one page to create it, then re-run this workflow."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync pages and push if changed
+        if: steps.wiki.outputs.exists == 'true'
+        run: |
+          rsync -a --exclude '.git' docs/wiki/ "$RUNNER_TEMP/wiki/"
+          cd "$RUNNER_TEMP/wiki"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "::notice::Wiki already up to date."
+          else
+            git commit -m "Sync docs/wiki from ${GITHUB_SHA::7}"
+            git push origin HEAD
+          fi
