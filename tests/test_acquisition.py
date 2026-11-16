@@ -89,6 +89,56 @@ def test_queue_overflow_becomes_zero_filled_gap():
     assert any(f.code.value == "dropout_gap" for f in oc.flags)
 
 
+@pytest.mark.parametrize("duration_s, expected_frames", [(30, 20000), (10.5, 10500)])
+def test_trailing_queue_overflow_preserves_timeline(duration_s, expected_frames):
+    """A disconnect after the final dropped block must retain its excluded span."""
+    entered = threading.Event()
+    release = threading.Event()
+
+    class BlockedSink(MemSink):
+        def write(self, block):
+            entered.set()
+            assert release.wait(5)
+            super().write(block)
+
+    class BurstBackend:
+        def check_input(self, *args):
+            pass
+
+        def open_input(self, device, fs, channels, blocksize, callback, finished, **kwargs):
+            class Stream:
+                def start(self):
+                    block = np.full((1000, 1), 0.1, dtype=np.float32)
+                    callback(block, 0, set())
+                    assert entered.wait(5)
+                    try:
+                        for i in range(1, 20):
+                            callback(block, i * 1000, set())
+                        finished("disconnected")
+                    finally:
+                        release.set()
+
+                def stop(self):
+                    pass
+
+                def close(self):
+                    pass
+
+            return Stream()
+
+    sink = BlockedSink()
+    session = CaptureSession(BurstBackend(), 0, 1000, 1, sink,
+                             duration_s=duration_s, blocksize=1000)
+    session.start()
+    outcome = session.wait(10)
+    assert outcome.state is SessionState.FAILED
+    assert outcome.frames == len(sink.data) == expected_frames
+    assert [(g.start_frame, g.end_frame, g.reason) for g in outcome.gaps] == [
+        (5000, expected_frames, "queue_overflow")]
+    assert np.all(sink.data[5000:] == 0)
+    assert any(f.code.value == "dropout_gap" for f in outcome.flags)
+
+
 def test_clipping_flagged_during_capture():
     w = SimWorld()
     w.chain_hum = False

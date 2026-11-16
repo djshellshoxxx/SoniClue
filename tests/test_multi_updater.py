@@ -55,21 +55,23 @@ def test_align_pair_recovers_known_delay():
     assert abs(abs(mapping.offset_s) - 0.005) < 2e-4
 
 
-def test_multi_capture_application_persists_and_stores_alignment(app):
+@pytest.mark.parametrize("device_count", [2, 3])
+def test_multi_capture_application_persists_and_stores_alignment(app, device_count):
     app.create_case("multi-device integration")
     channels = [ChannelConfig(index=0, label="mic", agc="off")]
     specs = [CaptureSpec(channels=channels, duration_s=0.5, backend="simulated", device=0, samplerate=48000)
-             for _ in range(2)]
+             for _ in range(device_count)]
     handle = app.start_multi_capture(specs)
     outcome = handle.finalize(timeout=20)
-    assert len(outcome.captures) == 2
+    assert len(outcome.captures) == device_count
     assert all(m.status == "complete" and m.source == "simulated" for m in outcome.captures)
-    assert len(app.captures()) == 2
-    assert len(outcome.alignments) == 1
-    mapping = outcome.alignments[0]["mapping"]
-    assert mapping.reference_capture_id == outcome.captures[0].id
-    assert mapping.other_capture_id == outcome.captures[1].id
-    assert app.store.get("clock_mapping", mapping.id) is not None
+    assert len(app.captures()) == device_count
+    assert len(outcome.alignments) == device_count - 1
+    for alignment, capture in zip(outcome.alignments, outcome.captures[1:]):
+        mapping = alignment["mapping"]
+        assert mapping.reference_capture_id == outcome.captures[0].id
+        assert mapping.other_capture_id == capture.id
+        assert app.store.get("clock_mapping", mapping.id) is not None
 
 
 def test_multi_capture_start_failure_discards_prepared_streams(app):

@@ -235,6 +235,14 @@ class CaptureSession:
                     if len(block):
                         self.sink.write(block)
                         expected += len(block)
+            # No later queued block exposes drops at the end of a stream.
+            # The backend is now closed, so its final drop endpoint is stable.
+            if self._drops and not self._cancel:
+                end = self._drops[-1].start + self._drops[-1].frames
+                if self.max_frames is not None:
+                    end = min(end, self.max_frames)
+                while expected < end:
+                    expected += self._fill_gap(expected, end - expected, "queue_overflow")
             self._frames = expected
             if (self.max_frames is not None and expected < self.max_frames and not self._cancel
                     and not self._user_stop and not self._error):

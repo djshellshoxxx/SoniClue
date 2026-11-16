@@ -27,12 +27,13 @@ import sqlite3
 import stat
 import tempfile
 import zipfile
+from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
 from .. import __version__
 from ..domain.errors import ImportSafetyError, StorageError
-from ..domain.model import ArchiveEntry, ArchiveManifest, dump_json, utcnow
+from ..domain.model import AnalysisResult, ArchiveEntry, ArchiveManifest, dump_json, utcnow
 from .files import sha256_file
 from .store import CaseStore, Workspace, sqlite_uri
 
@@ -53,6 +54,15 @@ def export_case(store: CaseStore, out_path: Path, include_derived: bool = True) 
     with tempfile.TemporaryDirectory() as td:
         snap = Path(td) / "case.db"
         store.snapshot_db(snap)
+        if not include_derived:
+            # Change only the exported snapshot. Scalar results remain useful,
+            # but must not refer to array caches deliberately left out of it.
+            # Closing also checkpoints the snapshot's WAL before case.db is zipped.
+            with closing(sqlite3.connect(snap)) as conn, conn:
+                for doc_id, payload in conn.execute("SELECT id, json FROM documents WHERE kind='analysis'").fetchall():
+                    result = AnalysisResult.model_validate_json(payload).model_copy(update={"arrays_file": None})
+                    conn.execute("UPDATE documents SET json=? WHERE kind='analysis' AND id=?",
+                                 (dump_json(result), doc_id))
         files: list[tuple[str, Path]] = [("case.db", snap)]
         for sub in ("captures", "reports") + (("derived",) if include_derived else ()):
             for p in sorted((store.path / sub).rglob("*")):

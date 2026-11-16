@@ -1,0 +1,48 @@
+{
+  "machine": {
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "python": "3.11.17",
+    "cpu_count": 5,
+    "machine": "x86_64",
+    "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "mem_gb": 18.4
+  },
+  "results": {
+    "import_core": {
+      "value": 2.056253321999975,
+      "peak_rss_mb": 149.6796875,
+      "process_wall_s": 2.21
+    },
+    "analysis_60s_2ch": {
+      "value": 1.3830474939999249,
+      "peak_rss_mb": 299.25,
+      "process_wall_s": 2.51
+    },
+    "writer_throughput_MBps": {
+      "value": 438.8641834926122,
+      "peak_rss_mb": 80.6015625,
+      "process_wall_s": 0.48
+    },
+    "case_open_30_captures": {
+      "value": 0.0016209719999551453,
+      "peak_rss_mb": 154.09765625,
+      "process_wall_s": 1.81
+    },
+    "demo_report_html_pdf": {
+      "value": 5.80110286199988,
+      "peak_rss_mb": 459.5703125,
+      "process_wall_s": 42.77
+    },
+    "diagnose_demo_case": {
+      "value": 0.07826953699986916,
+      "peak_rss_mb": 299.234375,
+      "process_wall_s": 43.0
+    },
+    "gui_idle_rss_MB": {
+      "value": 282.93359375,
+      "peak_rss_mb": 282.93359375,
+      "process_wall_s": 2.56
+    }
+  },
+  "date": "2026-10-31T05:33:01Z"
+}

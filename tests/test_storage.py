@@ -173,6 +173,35 @@ def test_archive_roundtrip(tmp_path):
         archive.import_case(out, ws2)  # exists
 
 
+@pytest.mark.parametrize("include_derived", [True, False])
+def test_analyzed_archive_roundtrip(app, tmp_path, include_derived):
+    from sonicclue.app.service import CaptureSpec
+
+    app.create_case("analyzed export")
+    capture = app.capture_blocking(CaptureSpec(
+        channels=[ChannelConfig(index=0, label="mic")], duration_s=0.5, backend="simulated"))
+    analysis = app.analyze(capture.id)
+    original_arrays = app.store.load_arrays(analysis)
+    path = tmp_path / "analyzed.scarchive"
+    manifest = archive.export_case(app.store, path, include_derived=include_derived)
+    assert any(e.path.startswith("derived/") for e in manifest.entries) == include_derived
+    workspace = Workspace(tmp_path / "imported")
+    cid = archive.import_case(path, workspace)
+    with workspace.open_case(cid) as imported:
+        assert imported.verify() == []
+        result = imported.get("analysis", analysis.id)
+        assert result.channels == analysis.channels
+        if include_derived:
+            for key, values in original_arrays.items():
+                np.testing.assert_array_equal(imported.load_arrays(result)[key], values)
+        else:
+            assert result.arrays_file is None
+            assert imported.load_arrays(result) == {}
+    # Export must not modify the source analysis or remove its cached arrays.
+    assert app.store.get("analysis", analysis.id).arrays_file == analysis.arrays_file
+    assert app.store.load_arrays(analysis).keys() == original_arrays.keys()
+
+
 def _zip(tmp_path, entries: dict, name="bad.zip", manifest=True):
     p = tmp_path / name
     with zipfile.ZipFile(p, "w", zipfile.ZIP_DEFLATED) as z:
