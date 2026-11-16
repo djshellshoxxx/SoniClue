@@ -55,6 +55,8 @@ python packaging/build.py                    # standalone bundle for this OS
 
 Architecture rules (dependency direction, Qt only in `gui`) are enforced by `tests/test_contracts_architecture.py`.
 
+Verified on this snapshot (Linux, Python 3.13 in a scratch venv with `[gui,dev]`): `QT_QPA_PLATFORM=offscreen pytest` exits 0 (full suite passes).
+
 ## Licence
 
 Licence to be decided by Circuit Drift Labs. See [LICENSE-NOTICE.md](LICENSE-NOTICE.md). Third-party components: `THIRD_PARTY_NOTICES.md` in every release bundle and `docs/specs/matrices/dependency-license-inventory.csv`.
